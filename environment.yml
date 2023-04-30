@@ -1,4 +1,4 @@
-name: nds
+name: ADL4CV
 channels:
   - pytorch
   - conda-forge
