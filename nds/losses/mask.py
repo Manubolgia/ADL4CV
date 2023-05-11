@@ -1,6 +1,6 @@
 import torch
 from typing import Dict, List
-
+import cv2
 from nds.core import View
 
 def mask_loss(views: List[View], gbuffers: List[Dict[str, torch.Tensor]], loss_function = torch.nn.MSELoss()):
@@ -16,3 +16,4 @@ def mask_loss(views: List[View], gbuffers: List[Dict[str, torch.Tensor]], loss_f
     for view, gbuffer in zip(views, gbuffers):
         loss += loss_function(view.mask, gbuffer["mask"])
     return loss / len(views)
+        
