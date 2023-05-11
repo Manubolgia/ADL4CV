@@ -200,8 +200,6 @@ def marching_cubes(voxel_grid: torch.tensor, voxel_occupancy: torch.tensor, leve
 
     from skimage import measure
     spacing = (voxel_grid[1, 1, 1] - voxel_grid[0, 0, 0]).cpu().numpy()
-    print("Voxel occupancy min:", voxel_occupancy.min().item())
-    print("Voxel occupancy max:", voxel_occupancy.max().item())
     vertices, faces, normals, values = measure.marching_cubes_lewiner(voxel_occupancy.cpu().numpy(), level=0.5, spacing=spacing, **kwargs)
 
     # Re-center vertices
@@ -217,34 +215,18 @@ def compute_visual_hull(views, aabb: AABB, grid_size, device, return_voxel_grid=
     """
 
     voxels_unit = create_coordinate_grid(grid_size, scale=0.5, device=device)
+
     aabb_min, aabb_max = aabb.minmax
-    print('aabb min', aabb_min)
-    print('aabb max', aabb_max)
     voxels = (voxels_unit * np.linalg.norm(aabb_max - aabb_min)) + torch.from_numpy(aabb.center).to(device)
 
     voxels_occupancy = torch.ones_like(voxels[..., 0], dtype=torch.float32)
 
     visibility_mask = torch.zeros_like(voxels[..., 0], dtype=torch.bool)
-
-
-    from PIL import Image
-    i=0
-    
     for view in views:
-
         voxels_projected = view.project(voxels)
         visibility_mask_current = (voxels_projected[..., 0] >= 0) & (voxels_projected[..., 0] < view.resolution[1]) & (voxels_projected[..., 1] >= 0) & (voxels_projected[..., 1] < view.resolution[0]) & (voxels_projected[..., 2] > 0)
         visibility_mask |= visibility_mask_current
         foreground_mask = sample(view.mask, voxels_projected.reshape(-1, 1, 3)).reshape(*voxels_projected.shape[:3]) > 0
-        print(foreground_mask.size())
-        t = foreground_mask[:,:,15].float()
-        t = (t - t.min()) / (t.max() - t.min()) * 255
-        t = t.byte()
-        image = Image.fromarray(t.cpu().squeeze().numpy(), mode='L')
-        # save the image
-        image.save('C:/Users/Manuel/Documents/GitHub/ADL4CV/out/foreground_masks_debug_skull/view_mask'+str(i)+'.png')
-        i+=1
-
         # Only perform the foreground test for voxels visible in this view
         voxels_occupancy[visibility_mask_current & ~foreground_mask] = 0.0
 
