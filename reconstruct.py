@@ -204,9 +204,11 @@ if __name__ == '__main__':
                 view_indices = args.visualization_views if use_fixed_views else [np.random.choice(list(range(len(views_subset))))]
                 for vi in view_indices:
                     debug_view = views[vi] if use_fixed_views else views_subset[vi]
-                    debug_gbuffer = renderer.render([debug_view], mesh, channels=['mask', 'position', 'normal'], with_antialiasing=True)[0]
+                    debug_gbuffer = renderer.render([debug_view], mesh, channels=['mask', 'position', 'normal', 'depth'], with_antialiasing=True)[0]
                     position = debug_gbuffer["position"]
                     normal = debug_gbuffer["normal"]
+                    depth = debug_gbuffer["depth"]
+
                     view_direction = torch.nn.functional.normalize(debug_view.camera.center - position, dim=-1)
 
                     # Save the shaded rendering
@@ -221,6 +223,12 @@ if __name__ == '__main__':
                     R = torch.tensor([[1, 0, 0], [0, -1, 0], [0, 0, -1]], device=device, dtype=torch.float32)
                     normal_image = (0.5*(normal @ debug_view.camera.R.T @ R.T + 1)) * debug_gbuffer["mask"] + (1-debug_gbuffer["mask"])
                     plt.imsave(normal_path / f'neuralshading_{iteration}.png', normal_image.cpu().numpy())
+
+                    # Save a depth map in camera space
+                    depth_path = (images_save_path / str(vi) / "depth") if use_fixed_views else (images_save_path / "depth")
+                    depth_path.mkdir(parents=True, exist_ok=True)
+                    depth_image = depth.squeeze()
+                    plt.imsave(depth_path / f'neuralshading_{iteration}.png', depth_image.cpu().numpy(), cmap='gray')
 
         if (args.save_frequency > 0) and (iteration == 1 or iteration % args.save_frequency == 0):
             with torch.no_grad():
