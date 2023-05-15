@@ -108,7 +108,7 @@ In order for the model to work with the data provided in the NeRF synthetic data
 		1.1 camera_variables.py
 		1.2 get_bbox.py
 	2. Run create_matrices to translate the transformation matrix and camera information to the R,K,t matrices.
-	3. Run renameand move to move the views and rename them in the appropiate format in the folder where you have stored the matrices
+	3. Run rename and move to move the views and rename them in the appropiate format in the folder where you have stored the matrices
 
 
 ## Using the Interactive Viewer
