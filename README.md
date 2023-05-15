@@ -104,11 +104,11 @@ If you want to tinker with our data loading routines to adapt them to your forma
 ## Using NeRF synthetic dataset instructions
 In order for the model to work with the data provided in the NeRF synthetic dataset follow these steps: 
 
-	1. Load model in Blender and run the blender scripts
-		1.1 camera_variables.py
-		1.2 get_bbox.py
-	2. Run create_matrices to translate the transformation matrix and camera information to the R,K,t matrices.
-	3. Run rename and move to move the views and rename them in the appropiate format in the folder where you have stored the matrices
+1. Load model in Blender and run the blender scripts
+	1.1 camera_variables.py
+	1.2 get_bbox.py
+2. Run create_matrices to translate the transformation matrix and camera information to the R,K,t matrices.
+3. Run rename and move to move the views and rename them in the appropiate format in the folder where you have stored the matrices
 
 
 ## Using the Interactive Viewer
