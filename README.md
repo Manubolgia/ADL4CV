@@ -101,6 +101,16 @@ If you would like to start your reconstruction from a custom initial mesh instea
 
 If you want to tinker with our data loading routines to adapt them to your format, have a look at `nds.utils.io.read_views()` and `nds.core.view.View.load()`.
 
+## Using NeRF synthetic dataset instructions
+In order for the model to work with the data provided in the NeRF synthetic dataset follow these steps: 
+
+	1. Load model in Blender and run the blender scripts
+		1.1 camera_variables.py
+		1.2 get_bbox.py
+	2. Run create_matrices to translate the transformation matrix and camera 	information to the R,K,t matrices.
+	3. Run renameand move to move the views and rename them in the appropiate 	format in the folder where you have stored the matrices
+
+
 ## Using the Interactive Viewer
 
 We provide an interactive viewer based on OpenGL to inspect the reconstructed meshes and their learned appearance. Before you can launch the viewer, install the additional dependencies with

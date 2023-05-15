@@ -8,8 +8,8 @@ Created on Mon May  8 12:37:47 2023
 import os
 import shutil
 
-source_folder = './hotdog/test'
-destination_folder = './hotdog/views_test'
+source_folder = ''
+destination_folder = ''
 
 # Create the destination folder if it doesn't exist
 if not os.path.exists(destination_folder):
@@ -18,7 +18,7 @@ if not os.path.exists(destination_folder):
 # Iterate over files in the source folder
 for filename in os.listdir(source_folder):
     # Check if the file has the correct format (r_i)
-    if filename.startswith('r_') and not filename.endswith('0029.png'):
+    if filename.startswith('r_') and not filename.endswith('0000.png'):
         # Extract the file number i without the extension
         file_number_without_extension = os.path.splitext(filename[2:])[0]
         

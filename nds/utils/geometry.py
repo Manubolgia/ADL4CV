@@ -227,8 +227,6 @@ def compute_visual_hull(views, aabb: AABB, grid_size, device, return_voxel_grid=
     visibility_mask = torch.zeros_like(voxels[..., 0], dtype=torch.bool)
 
 
-    #from PIL import Image
-    #i=0
     
     for view in views:
 
@@ -236,14 +234,6 @@ def compute_visual_hull(views, aabb: AABB, grid_size, device, return_voxel_grid=
         visibility_mask_current = (voxels_projected[..., 0] >= 0) & (voxels_projected[..., 0] < view.resolution[1]) & (voxels_projected[..., 1] >= 0) & (voxels_projected[..., 1] < view.resolution[0]) & (voxels_projected[..., 2] > 0)
         visibility_mask |= visibility_mask_current
         foreground_mask = sample(view.mask, voxels_projected.reshape(-1, 1, 3)).reshape(*voxels_projected.shape[:3]) > 0
-        #print(foreground_mask.size())
-        #t = foreground_mask[:,:,15].float()
-        #t = (t - t.min()) / (t.max() - t.min()) * 255
-        #t = t.byte()
-        #image = Image.fromarray(t.cpu().squeeze().numpy(), mode='L')
-        # save the image
-        #image.save('C:/Users/Manuel/Documents/GitHub/ADL4CV/out/foreground_masks_debug_skull/view_mask'+str(i)+'.png')
-        #i+=1
 
         # Only perform the foreground test for voxels visible in this view
         voxels_occupancy[visibility_mask_current & ~foreground_mask] = 0.0
