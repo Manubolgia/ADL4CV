@@ -9,12 +9,13 @@ import numpy as np
          
 DEBUG = False
             
-VIEWS = 200
+VIEWS = 20
 RESOLUTION = 800
-RESULTS_PATH = 'results_test_200'
+RESULTS_PATH = 'results_test_20'
 DEPTH_SCALE = 1.4
 COLOR_DEPTH = 8
 FORMAT = 'PNG'
+RANDOM_VIEWS = False
 UPPER_VIEWS = True
 CIRCLE_FIXED_START = (0,0,0)
 CIRCLE_FIXED_END = (.7,0,0)
@@ -34,7 +35,15 @@ if not os.path.exists(fp):
 
 # Data to store in JSON file
 out_data = {
-    'camera_angle_x': bpy.data.objects['Camera'].data.angle_x,
+    'Focal_length_mm': bpy.data.objects['Camera'].data.lens,
+    'sensor_H': bpy.data.objects['Camera'].data.sensor_height,
+    'sensor_W': bpy.data.objects['Camera'].data.sensor_width,
+    'shift_x': bpy.data.objects['Camera'].data.shift_x,
+    'shift_y': bpy.data.objects['Camera'].data.shift_y,
+    'image_H': bpy.context.scene.render.resolution_y,
+    'image_W': bpy.context.scene.render.resolution_x,
+    'pixel_aspect_x': bpy.context.scene.render.pixel_aspect_x,
+    'pixel_aspect_y': bpy.context.scene.render.pixel_aspect_y
 }
 
 # Render Optimizations
@@ -45,6 +54,13 @@ bpy.context.scene.render.use_persistent_data = True
 bpy.context.scene.use_nodes = True
 tree = bpy.context.scene.node_tree
 links = tree.links
+
+# Delete existing nodes if they exist
+for node_name in ['Custom Outputs', 'Depth Output', 'Normal Output', 'Map Range.001']:
+    if node_name in tree.nodes:
+        tree.nodes.remove(tree.nodes[node_name])
+
+# Proceed with node creation code
 
 # Add passes for additionally dumping albedo and normals.
 bpy.context.scene.view_layers["RenderLayer"].use_pass_normal = True
@@ -57,6 +73,11 @@ if 'Custom Outputs' not in tree.nodes:
     render_layers.label = 'Custom Outputs'
     render_layers.name = 'Custom Outputs'
 
+    normal_file_output = tree.nodes.new(type="CompositorNodeOutputFile")
+    normal_file_output.label = 'Normal Output'
+    normal_file_output.name = 'Normal Output'
+    links.new(render_layers.outputs['Normal'], normal_file_output.inputs[0])
+
     depth_file_output = tree.nodes.new(type="CompositorNodeOutputFile")
     depth_file_output.label = 'Depth Output'
     depth_file_output.name = 'Depth Output'
@@ -64,20 +85,15 @@ if 'Custom Outputs' not in tree.nodes:
       links.new(render_layers.outputs['Depth'], depth_file_output.inputs[0])
     else:
       # Remap as other types can not represent the full range of depth.
-      map = tree.nodes.new(type="CompositorNodeMapRange")
+      map = tree.nodes.new(type="CompositorNodeMapValue")
       # Size is chosen kind of arbitrarily, try out until you're satisfied with resulting depth map.
-      map.inputs['From Min'].default_value = 0
-      map.inputs['From Max'].default_value = 8
-      map.inputs['To Min'].default_value = 1
-      map.inputs['To Max'].default_value = 0
+      map.offset = [-0.7]
+      map.size = [DEPTH_SCALE]
+      map.use_min = True
+      map.min = [0]
       links.new(render_layers.outputs['Depth'], map.inputs[0])
 
       links.new(map.outputs[0], depth_file_output.inputs[0])
-
-    normal_file_output = tree.nodes.new(type="CompositorNodeOutputFile")
-    normal_file_output.label = 'Normal Output'
-    normal_file_output.name = 'Normal Output'
-    links.new(render_layers.outputs['Normal'], normal_file_output.inputs[0])
 
 # Background
 bpy.context.scene.render.dither_intensity = 0.0
@@ -129,16 +145,27 @@ if not DEBUG:
 
 out_data['frames'] = []
 
-b_empty.rotation_euler = CIRCLE_FIXED_START[0] + vertical_diff
+if not RANDOM_VIEWS:
+    b_empty.rotation_euler = CIRCLE_FIXED_START
+
+#b_empty.rotation_euler = CIRCLE_FIXED_START[0] + vertical_diff
 
 for i in range(0, VIEWS):
+    print(i,'/',VIEWS)
     if DEBUG:
         i = np.random.randint(0,VIEWS)
-        b_empty.rotation_euler[0] = CIRCLE_FIXED_START[0] + (np.cos(radians(stepsize*i))+1)/2 * vertical_diff
-        b_empty.rotation_euler[2] += radians(2*stepsize*i)
-   
-    print("Rotation {}, {}".format((stepsize * i), radians(stepsize * i)))
-    scene.render.filepath = fp + '/r_' + str(i)
+        b_empty.rotation_euler[2] += radians(stepsize*i)
+    if RANDOM_VIEWS:
+        scene.render.filepath = fp + '/r_' + str(i)
+        if UPPER_VIEWS:
+            rot = np.random.uniform(0, 1, size=3) * (1,0,2*np.pi)
+            rot[0] = np.abs(np.arccos(1 - 2 * rot[0]) - np.pi/2)
+            b_empty.rotation_euler = rot
+        else:
+            b_empty.rotation_euler = np.random.uniform(0, 2*np.pi, size=3)    
+    else:
+        print("Rotation {}, {}".format((stepsize * i), radians(stepsize * i)))
+        scene.render.filepath = fp + '/r_' + str(i)
 
     tree.nodes['Depth Output'].file_slots[0].path = scene.render.filepath + "_depth_"
     tree.nodes['Normal Output'].file_slots[0].path = scene.render.filepath + "_normal_"
@@ -155,9 +182,18 @@ for i in range(0, VIEWS):
     }
     out_data['frames'].append(frame_data)
 
-    b_empty.rotation_euler[0] = CIRCLE_FIXED_START[0] + (np.cos(radians(stepsize*i))+1)/2 * vertical_diff
-    b_empty.rotation_euler[2] += radians(2*stepsize)
+    if RANDOM_VIEWS:
+        if UPPER_VIEWS:
+            rot = np.random.uniform(0, 1, size=3) * (1,0,2*np.pi)
+            rot[0] = np.abs(np.arccos(1 - 2 * rot[0]) - np.pi/2)
+            b_empty.rotation_euler = rot
+        else:
+            b_empty.rotation_euler = np.random.uniform(0, 2*np.pi, size=3)
+    else:
+        b_empty.rotation_euler[2] += radians(stepsize)
 
 if not DEBUG:
     with open(fp + '/' + 'transforms.json', 'w') as out_file:
         json.dump(out_data, out_file, indent=4)
+
+
