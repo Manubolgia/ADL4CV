@@ -36,10 +36,10 @@ if __name__ == '__main__':
     parser.add_argument('--visualization_views', type=int, nargs='+', default=[], help="Views to use for visualization. By default, a random view is selected each time")
     parser.add_argument('--device', type=int, default=0, choices=([-1] + list(range(torch.cuda.device_count()))), help="GPU to use; -1 is CPU")
     parser.add_argument('--weight_mask', type=float, default=2.0, help="Weight of the mask term")
-    parser.add_argument('--weight_normal_c', type=float, default=0.1, help="Weight of the normal consistency term")
+    parser.add_argument('--weight_normal_c', type=float, default=0.2, help="Weight of the normal consistency term")
     parser.add_argument('--weight_laplacian', type=float, default=40.0, help="Weight of the laplacian term")
     parser.add_argument('--weight_shading', type=float, default=1.0, help="Weight of the shading term")
-    parser.add_argument('--weight_normal', type=float, default=0.1, help="Weight of the normal term")
+    parser.add_argument('--weight_normal', type=float, default=0.05, help="Weight of the normal term")
     parser.add_argument('--shading_percentage', type=float, default=0.75, help="Percentage of valid pixels considered in the shading loss (0-1)")
     parser.add_argument('--hidden_features_layers', type=int, default=3, help="Number of hidden layers in the positional feature part of the neural shader")
     parser.add_argument('--hidden_features_size', type=int, default=256, help="Width of the hidden layers in the neural shader")
@@ -192,8 +192,6 @@ if __name__ == '__main__':
         for k, v in losses.items():
             loss += v * loss_weights[k]
 
-        loss_normal = torch.tensor(0., device=device)
-
 
         # Optimize
         optimizer_vertices.zero_grad()
@@ -202,7 +200,7 @@ if __name__ == '__main__':
         optimizer_vertices.step()
         optimizer_shader.step()
 
-        progress_bar.set_postfix({'loss': loss.detach().cpu(), 'normal_loss':loss_normal.detach().cpu()})
+        progress_bar.set_postfix({'loss': loss.detach().cpu(), 'normal_loss':losses['normal'].detach().cpu()})
 
         # Visualizations
         if (args.visualization_frequency > 0) and shader and (iteration == 1 or iteration % args.visualization_frequency == 0):

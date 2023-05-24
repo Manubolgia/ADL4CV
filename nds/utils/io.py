@@ -30,7 +30,8 @@ def read_views(directory, scale, device):
     
     views = []
     for image_path in image_paths:
-        views.append(View.load(image_path, device))
+        if 'normal' not in str(image_path):
+            views.append(View.load(image_path, device))
     print("Found {:d} views".format(len(views)))
 
     if scale > 1:

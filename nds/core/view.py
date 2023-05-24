@@ -58,7 +58,8 @@ class View:
         color = color[:, :, :3]
 
         # Get the normals
-        normal = torch.FloatTensor(np.array(Image.open(image_path.parent / (image_path.stem + "_normal.png"))))
+        normal = torch.FloatTensor(np.array(Image.open(image_path.parent / (image_path.stem + "_normal.png")).convert('RGB')))
+        
 
         return cls(color, mask, normal, camera, device=device)
 

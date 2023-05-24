@@ -3,10 +3,6 @@ from typing import Dict, List
 import cv2
 from nds.core import View
 
-def angular_loss(inp,target):
-    loss = 1 - torch.cosine_similarity(inp, target)
-    return (loss**2).mean()
-
 def normal_loss(views: List[View], gbuffers: List[Dict[str, torch.Tensor]], L1 = torch.nn.L1Loss()):
     """ Compute the normal term as $$$the mean difference between the original masks and the rendered masks.
 
@@ -21,6 +17,5 @@ def normal_loss(views: List[View], gbuffers: List[Dict[str, torch.Tensor]], L1 =
     loss = 0.0
     for view, gbuffer in zip(views, gbuffers):
         normal = gbuffer["normal"]*255*gbuffer["mask"]
-        loss += L1(view.normal, normal)
-        loss += angular_loss(view.normal, normal)
+        loss += L1(view.normal, normal) + ((1 - torch.cosine_similarity(view.normal, normal))**2).mean()
     return loss / len(views)
