@@ -17,5 +17,5 @@ def normal_loss(views: List[View], gbuffers: List[Dict[str, torch.Tensor]], L1 =
     loss = 0.0
     for view, gbuffer in zip(views, gbuffers):
         normal = gbuffer["normal"]*255*gbuffer["mask"]
-        loss += L1(view.normal, normal) + ((1 - torch.cosine_similarity(view.normal, normal))**2).mean()
+        loss += L1(view.normal, normal) + ((1 - torch.cosine_similarity(view.normal, normal))).mean()
     return loss / len(views)

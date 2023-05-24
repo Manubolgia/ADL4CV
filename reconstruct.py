@@ -19,6 +19,8 @@ from nds.utils import (
     AABB, read_views, read_mesh, write_mesh, visualize_mesh_as_overlay, visualize_views, generate_mesh, mesh_generator_names
 )
 
+from nds.utils.save_losses import save_losses
+
 if __name__ == '__main__':
     parser = ArgumentParser(description='Multi-View Mesh Reconstruction with Neural Deferred Shading', formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument('--input_dir', type=Path, default="./data", help="Path to the input data")
@@ -36,17 +38,16 @@ if __name__ == '__main__':
     parser.add_argument('--visualization_views', type=int, nargs='+', default=[], help="Views to use for visualization. By default, a random view is selected each time")
     parser.add_argument('--device', type=int, default=0, choices=([-1] + list(range(torch.cuda.device_count()))), help="GPU to use; -1 is CPU")
     parser.add_argument('--weight_mask', type=float, default=2.0, help="Weight of the mask term")
-    parser.add_argument('--weight_normal_c', type=float, default=0.2, help="Weight of the normal consistency term")
+    parser.add_argument('--weight_normal_c', type=float, default=0.1, help="Weight of the normal consistency term")
     parser.add_argument('--weight_laplacian', type=float, default=40.0, help="Weight of the laplacian term")
     parser.add_argument('--weight_shading', type=float, default=1.0, help="Weight of the shading term")
-    parser.add_argument('--weight_normal', type=float, default=0.05, help="Weight of the normal term")
+    parser.add_argument('--weight_normal', type=float, default=0.0, help="Weight of the normal term")
     parser.add_argument('--shading_percentage', type=float, default=0.75, help="Percentage of valid pixels considered in the shading loss (0-1)")
     parser.add_argument('--hidden_features_layers', type=int, default=3, help="Number of hidden layers in the positional feature part of the neural shader")
     parser.add_argument('--hidden_features_size', type=int, default=256, help="Width of the hidden layers in the neural shader")
     parser.add_argument('--fourier_features', type=str, default='positional', choices=(['none', 'gfft', 'positional']), help="Input encoding used in the neural shader")
     parser.add_argument('--activation', type=str, default='relu', choices=(['relu', 'sine']), help="Activation function used in the neural shader")
     parser.add_argument('--fft_scale', type=int, default=4, help="Scale parameter of frequency-based input encodings in the neural shader")
-
     # Add module arguments
     ViewSampler.add_arguments(parser)
 
@@ -65,9 +66,11 @@ if __name__ == '__main__':
     images_save_path = experiment_dir / "images"
     meshes_save_path = experiment_dir / "meshes"
     shaders_save_path = experiment_dir / "shaders"
+    plots_save_path = experiment_dir / "plots"
     images_save_path.mkdir(parents=True, exist_ok=True)
     meshes_save_path.mkdir(parents=True, exist_ok=True)
     shaders_save_path.mkdir(parents=True, exist_ok=True)
+    plots_save_path.mkdir(parents=True, exist_ok=True)
 
     # Save args for this execution
     with open(experiment_dir / "args.txt", "w") as text_file:
@@ -139,6 +142,8 @@ if __name__ == '__main__':
         "shading": args.weight_shading
     }
     losses = {k: torch.tensor(0.0, device=device) for k in loss_weights}
+    losses_record = torch.zeros(5, 1 + args.iterations // args.save_frequency).to(device)
+    losses_i = 0
 
     progress_bar = tqdm(range(1, args.iterations + 1))
     for iteration in progress_bar:
@@ -157,7 +162,7 @@ if __name__ == '__main__':
 
             # Adjust weights and step size
             loss_weights['laplacian'] *= 4
-            loss_weights['normal'] *= 4
+            #loss_weights['normal'] *= 4
             loss_weights['normal_c'] *= 4
             lr_vertices *= 0.75
 
@@ -192,7 +197,6 @@ if __name__ == '__main__':
         for k, v in losses.items():
             loss += v * loss_weights[k]
 
-
         # Optimize
         optimizer_vertices.zero_grad()
         optimizer_shader.zero_grad()
@@ -200,7 +204,8 @@ if __name__ == '__main__':
         optimizer_vertices.step()
         optimizer_shader.step()
 
-        progress_bar.set_postfix({'loss': loss.detach().cpu(), 'normal_loss':losses['normal'].detach().cpu()})
+        progress_bar.set_postfix({'loss': loss.detach().cpu(), 'normal_loss':losses['normal'].detach().cpu()*loss_weights['normal']})
+
 
         # Visualizations
         if (args.visualization_frequency > 0) and shader and (iteration == 1 or iteration % args.visualization_frequency == 0):
@@ -235,7 +240,6 @@ if __name__ == '__main__':
                     plt.imsave(normal_path / f'neuralshading_{iteration}.png', normal_image)
                     #normal_image = (0.5*(normal @ debug_view.camera.R.T + 1)) * debug_gbuffer["mask"] + (1-debug_gbuffer["mask"])
 
-                    #print(normal.size())
 
                     #normal_image = (0.5*(normal + 1)*255)
                     #normal_image = normal_image * debug_gbuffer["mask"].expand_as(normal_image)
@@ -253,6 +257,23 @@ if __name__ == '__main__':
                 mesh_for_writing = space_normalization.denormalize_mesh(mesh.detach().to('cpu'))
                 write_mesh(meshes_save_path / f"mesh_{iteration:06d}.obj", mesh_for_writing)                                
             shader.save(shaders_save_path / f'shader_{iteration:06d}.pt')
+
+            try:
+                if loss_weights['mask'] > 0:
+                    losses_record[0,losses_i] = losses['mask']
+                if loss_weights['normal'] > 0:
+                    losses_record[1,losses_i] = losses['normal']
+                if loss_weights['normal_c'] > 0:
+                    losses_record[2,losses_i] = losses['normal_c']
+                if loss_weights['laplacian'] > 0:
+                    losses_record[3,losses_i] = losses['laplacian']
+                if loss_weights['shading'] > 0:
+                    losses_record[4,losses_i] = losses['shading']
+                losses_i+=1
+            except:
+                print('There was an error while saving the losses')
+    
+    save_losses(losses_record, plots_save_path)
 
     mesh_for_writing = space_normalization.denormalize_mesh(mesh.detach().to('cpu'))
     write_mesh(meshes_save_path / f"mesh_{args.iterations:06d}.obj", mesh_for_writing)
