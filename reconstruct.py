@@ -10,7 +10,7 @@ from nds.core import (
     Mesh, Renderer
 )
 from nds.losses import (
-    mask_loss, normal_consistency_loss, laplacian_loss, shading_loss
+    mask_loss, normal_consistency_loss, laplacian_loss, shading_loss, normal_loss
 )
 from nds.modules import (
     SpaceNormalization, NeuralShader, ViewSampler
@@ -36,9 +36,10 @@ if __name__ == '__main__':
     parser.add_argument('--visualization_views', type=int, nargs='+', default=[], help="Views to use for visualization. By default, a random view is selected each time")
     parser.add_argument('--device', type=int, default=0, choices=([-1] + list(range(torch.cuda.device_count()))), help="GPU to use; -1 is CPU")
     parser.add_argument('--weight_mask', type=float, default=2.0, help="Weight of the mask term")
-    parser.add_argument('--weight_normal', type=float, default=0.1, help="Weight of the normal term")
+    parser.add_argument('--weight_normal_c', type=float, default=0.1, help="Weight of the normal consistency term")
     parser.add_argument('--weight_laplacian', type=float, default=40.0, help="Weight of the laplacian term")
     parser.add_argument('--weight_shading', type=float, default=1.0, help="Weight of the shading term")
+    parser.add_argument('--weight_normal', type=float, default=0.1, help="Weight of the normal term")
     parser.add_argument('--shading_percentage', type=float, default=0.75, help="Percentage of valid pixels considered in the shading loss (0-1)")
     parser.add_argument('--hidden_features_layers', type=int, default=3, help="Number of hidden layers in the positional feature part of the neural shader")
     parser.add_argument('--hidden_features_size', type=int, default=256, help="Width of the hidden layers in the neural shader")
@@ -133,6 +134,7 @@ if __name__ == '__main__':
     loss_weights = {
         "mask": args.weight_mask,
         "normal": args.weight_normal,
+        "normal_c":args.weight_normal_c,
         "laplacian": args.weight_laplacian,
         "shading": args.weight_shading
     }
@@ -156,6 +158,7 @@ if __name__ == '__main__':
             # Adjust weights and step size
             loss_weights['laplacian'] *= 4
             loss_weights['normal'] *= 4
+            loss_weights['normal_c'] *= 4
             lr_vertices *= 0.75
 
             # Create a new optimizer for the vertex offsets
@@ -177,7 +180,9 @@ if __name__ == '__main__':
         if loss_weights['mask'] > 0:
             losses['mask'] = mask_loss(views_subset, gbuffers)
         if loss_weights['normal'] > 0:
-            losses['normal'] = normal_consistency_loss(mesh)
+            losses['normal'] = normal_loss(views_subset, gbuffers)
+        if loss_weights['normal_c'] > 0:
+            losses['normal_c'] = normal_consistency_loss(mesh)
         if loss_weights['laplacian'] > 0:
             losses['laplacian'] = laplacian_loss(mesh)
         if loss_weights['shading'] > 0:
@@ -187,6 +192,9 @@ if __name__ == '__main__':
         for k, v in losses.items():
             loss += v * loss_weights[k]
 
+        loss_normal = torch.tensor(0., device=device)
+
+
         # Optimize
         optimizer_vertices.zero_grad()
         optimizer_shader.zero_grad()
@@ -194,7 +202,7 @@ if __name__ == '__main__':
         optimizer_vertices.step()
         optimizer_shader.step()
 
-        progress_bar.set_postfix({'loss': loss.detach().cpu()})
+        progress_bar.set_postfix({'loss': loss.detach().cpu(), 'normal_loss':loss_normal.detach().cpu()})
 
         # Visualizations
         if (args.visualization_frequency > 0) and shader and (iteration == 1 or iteration % args.visualization_frequency == 0):
@@ -218,11 +226,23 @@ if __name__ == '__main__':
                     plt.imsave(shaded_path / f'neuralshading_{iteration}.png', shaded_image.cpu().numpy())
 
                     # Save a normal map in camera space
+                    normal = torch.clamp(normal, min=0)
                     normal_path = (images_save_path / str(vi) / "normal") if use_fixed_views else (images_save_path / "normal")
                     normal_path.mkdir(parents=True, exist_ok=True)
                     R = torch.tensor([[1, 0, 0], [0, -1, 0], [0, 0, -1]], device=device, dtype=torch.float32)
-                    normal_image = (0.5*(normal @ debug_view.camera.R.T @ R.T + 1)) * debug_gbuffer["mask"] + (1-debug_gbuffer["mask"])
-                    plt.imsave(normal_path / f'neuralshading_{iteration}.png', normal_image.cpu().numpy())
+                    #normal_image = (0.5*(normal @ debug_view.camera.R.T @ R.T + 1)) * debug_gbuffer["mask"] + (1-debug_gbuffer["mask"])
+                    normal_image = (normal)*255
+                    normal_image = normal_image * debug_gbuffer["mask"].expand_as(normal_image)
+                    normal_image = normal_image.cpu().numpy().astype(np.uint8)
+                    plt.imsave(normal_path / f'neuralshading_{iteration}.png', normal_image)
+                    #normal_image = (0.5*(normal @ debug_view.camera.R.T + 1)) * debug_gbuffer["mask"] + (1-debug_gbuffer["mask"])
+
+                    #print(normal.size())
+
+                    #normal_image = (0.5*(normal + 1)*255)
+                    #normal_image = normal_image * debug_gbuffer["mask"].expand_as(normal_image)
+                    #normal_image = normal_image.cpu().numpy().astype(np.uint8)
+                    #plt.imsave(normal_path / f'neuralshading_{iteration}.png', normal_image.cpu().numpy())
 
                     # Save a depth map in camera space
                     depth_path = (images_save_path / str(vi) / "depth") if use_fixed_views else (images_save_path / "depth")

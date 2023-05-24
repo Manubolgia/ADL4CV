@@ -18,15 +18,16 @@ if not os.path.exists(destination_folder):
 # Iterate over files in the source folder
 for filename in os.listdir(source_folder):
     # Check if the file has the correct format (r_i)
-    if filename.startswith('r_') and not filename.endswith('0000.png'):
+    if filename.startswith('r_') and filename.endswith('.png'):
         # Extract the file number i without the extension
-        file_number_without_extension = os.path.splitext(filename[2:])[0]
+        file_number_without_extension = os.path.splitext(filename)[0] # removes .png
+        image_number = int(file_number_without_extension.split('_')[1])
         
-        # Convert the file number to an integer
-        image_number = int(file_number_without_extension)
-        
-        # Define the new filename using the new naming convention
-        new_filename = f'cam{image_number:06d}'
+        if 'normal' in filename:
+            # Define the new filename using the new naming convention
+            new_filename = f'cam{image_number:06d}_normal'
+        else:
+            new_filename = f'cam{image_number:06d}'
         
         # Get the file extension (e.g., '.jpg', '.png')
         file_extension = os.path.splitext(filename)[1]
@@ -40,6 +41,5 @@ for filename in os.listdir(source_folder):
         
         # Copy the file to the destination folder with the new name
         shutil.copyfile(source_path, destination_path)
-
 print("Files have been copied and renamed.")
 
