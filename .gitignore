@@ -2,4 +2,5 @@
 /nvdiffrast/
 /out/
 /temp/
+/DTUeval-python/eval_results/
 *.pyc
