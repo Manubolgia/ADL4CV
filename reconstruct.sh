@@ -1,11 +1,12 @@
 #!/bin/bash
 
-while getopts i:v:n: flag
+while getopts i:v:n:m: flag
 do
     case "${flag}" in
         i) input_path=${OPTARG};;
         v) views=${OPTARG};;
         n) n=${OPTARG};;
+        m) mode=${OPTARG};;
     esac
 done
 input_dir="${input_path}/${views}"
@@ -13,7 +14,7 @@ mkdir "${input_dir}_$n"
 mkdir "${input_dir}_$n/views"
 cd "${input_dir}/views"
 imgs_num=$(ls | wc -l)
-let "imgs_num = $imgs_num / 4 - 1"
+let "imgs_num = $imgs_num / 5 - 1"
 indexes=$(shuf -i 0-$imgs_num -n $n)
 
 
@@ -26,6 +27,8 @@ do
         file_r=$(printf "cam%06d_r.txt" $index)
         ln -s ${input_dir}/views/$file_r ${input_dir}_$n/views/$file_r
         file_t=$(printf "cam%06d_t.txt" $index)
+        ln -s ${input_dir}/views/$file_t ${input_dir}_$n/views/$file_t
+        file_t=$(printf "cam%06d_normal.png" $index)
         ln -s ${input_dir}/views/$file_t ${input_dir}_$n/views/$file_t
 done
 ln -s ${input_dir}/bbox.txt ${input_dir}_$n/bbox.txt

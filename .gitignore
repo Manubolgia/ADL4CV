@@ -3,4 +3,5 @@
 /out/
 /temp/
 /DTUeval-python/eval_results/
+/NeRFeval/eval_results/
 *.pyc

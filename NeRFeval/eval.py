@@ -5,6 +5,7 @@ import numpy as np
 
 # pip install trimesh[all]
 import trimesh
+import os
 
 # https://github.com/otaheri/chamfer_distance
 from chamfer_distance import ChamferDistance
@@ -47,5 +48,15 @@ if __name__ == "__main__":
 
     dist1, dist2, idx1, idx2 = chamfer_dist(vpos_mesh[None, ...], vpos_ref[None, ...])
     loss = (torch.mean(dist1) + torch.mean(dist2)).item()
-    
-    print("[%7d tris]: %1.5f" % (mesh.faces.shape[0], loss))
+
+    instance_name = FLAGS.mesh.split('/')[-3]
+
+    path = 'eval_results/%s.txt' % instance_name
+    isExist = os.path.exists("eval_results/")
+    if not isExist:
+        os.makedirs("eval_results/")
+        print("The new directory is created!")
+
+    with open(path, 'w') as f:
+        f.write('dist1: %s \ndist2: %s \nidx1: %s \nidx2: %s \nloss: %f \ntris: %s' 
+                % (torch.mean(dist1).item(), torch.mean(dist2).item(), idx1.float().mean().item(), idx2.float().mean().item(), loss, mesh.faces.shape[0]))
