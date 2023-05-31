@@ -1,12 +1,11 @@
 #!/bin/bash
 
-while getopts i:v:n:m: flag
+while getopts i:v:n: flag
 do
     case "${flag}" in
         i) input_path=${OPTARG};;
         v) views=${OPTARG};;
         n) n=${OPTARG};;
-        m) mode=${OPTARG};;
     esac
 done
 input_dir="${input_path}/${views}"
@@ -35,5 +34,8 @@ ln -s ${input_dir}/bbox.txt ${input_dir}_$n/bbox.txt
 cd ~/ADL4CV
 
 python3 reconstruct.py --input_dir ${input_dir}_$n/views --input_bbox ${input_dir}_$n/bbox.txt
+mv out/${views}_$n out/${views}_${n}_std
+python3 reconstruct.py --input_dir ${input_dir}_$n/views --input_bbox ${input_dir}_$n/bbox.txt --weight_normal 0.1
+mv out/${views}_$n out/${views}_${n}_norm
 
 rm -r ${input_dir}_$n
