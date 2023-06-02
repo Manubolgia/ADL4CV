@@ -143,7 +143,7 @@ if __name__ == '__main__':
         "shading": args.weight_shading
     }
     losses = {k: torch.tensor(0.0, device=device) for k in loss_weights}
-    losses_record = torch.zeros(5, 1 + args.iterations // args.save_frequency).to(device)
+    losses_record = torch.zeros(5, 1 + args.iterations // args.save_frequency)
     losses_i = 0
 
     progress_bar = tqdm(range(1, args.iterations + 1))
@@ -261,15 +261,15 @@ if __name__ == '__main__':
 
             try:
                 if loss_weights['mask'] > 0:
-                    losses_record[0,losses_i] = losses['mask']
+                    losses_record[0,losses_i] = losses['mask'].cpu()
                 if loss_weights['normal'] > 0:
-                    losses_record[1,losses_i] = losses['normal']
+                    losses_record[1,losses_i] = losses['normal'].cpu()
                 if loss_weights['normal_c'] > 0:
-                    losses_record[2,losses_i] = losses['normal_c']
+                    losses_record[2,losses_i] = losses['normal_c'].cpu()
                 if loss_weights['laplacian'] > 0:
-                    losses_record[3,losses_i] = losses['laplacian']
+                    losses_record[3,losses_i] = losses['laplacian'].cpu()
                 if loss_weights['shading'] > 0:
-                    losses_record[4,losses_i] = losses['shading']
+                    losses_record[4,losses_i] = losses['shading'].cpu()
                 losses_i+=1
             except:
                 print('There was an error while saving the losses')

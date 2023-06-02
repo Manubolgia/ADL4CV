@@ -24,21 +24,25 @@ def write_mesh(path, mesh):
     mesh_ = trimesh.Trimesh(vertices=vertices, faces=indices, process=False)
     mesh_.export(path)
 
+
 def read_views(directory, num_views, scale, device):
     directory = Path(directory)
 
     image_paths = sorted([path for path in directory.iterdir() if (path.is_file() and path.suffix == '.png')])
+
+    # Filter out the 'normal' images
+    image_paths = [path for path in image_paths if 'normal' not in str(path)]
+
+    # Ensure there are enough views to sample from
+    if num_views != -1:
+        if len(image_paths) < num_views:
+            raise ValueError(f"Error: Requested {num_views} views, but only found {len(image_paths)}")
+        # Select a subset of image paths before loading them
+        image_paths = random.sample(image_paths, num_views)
     
     views = []
     for image_path in image_paths:
-        if 'normal' not in str(image_path):
-            views.append(View.load(image_path, device))
-    
-    # Ensure there are enough views to sample from
-    if num_views != -1:
-        if len(views) < num_views:
-            raise ValueError(f"Error: Requested {num_views} views, but only found {len(views)}")
-        views = random.sample(views, num_views)
+        views.append(View.load(image_path, device))
 
     print("Found {:d} views".format(len(views)))
 
