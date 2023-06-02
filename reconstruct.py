@@ -48,6 +48,7 @@ if __name__ == '__main__':
     parser.add_argument('--fourier_features', type=str, default='positional', choices=(['none', 'gfft', 'positional']), help="Input encoding used in the neural shader")
     parser.add_argument('--activation', type=str, default='relu', choices=(['relu', 'sine']), help="Activation function used in the neural shader")
     parser.add_argument('--fft_scale', type=int, default=4, help="Scale parameter of frequency-based input encodings in the neural shader")
+    parser.add_argument('--num_views', type=int, default=-1, help="Number of input views chosen at random from the input_dir")
     # Add module arguments
     ViewSampler.add_arguments(parser)
 
@@ -77,7 +78,7 @@ if __name__ == '__main__':
         print(f"{args}", file=text_file)
 
     # Read the views
-    views = read_views(args.input_dir, scale=args.image_scale, device=device)
+    views = read_views(args.input_dir, args.num_views, scale=args.image_scale, device=device)
 
     # Obtain the initial mesh and compute its connectivity
     mesh_initial: Mesh = None
