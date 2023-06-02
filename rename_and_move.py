@@ -18,7 +18,7 @@ if not os.path.exists(destination_folder):
 # Iterate over files in the source folder
 for filename in os.listdir(source_folder):
     # Check if the file has the correct format (r_i)
-    if filename.startswith('r_') and filename.endswith('.png'):
+    if filename.startswith('r_') and filename.endswith('.png') and 'depth' not in filename:
         # Extract the file number i without the extension
         file_number_without_extension = os.path.splitext(filename)[0] # removes .png
         image_number = int(file_number_without_extension.split('_')[1])

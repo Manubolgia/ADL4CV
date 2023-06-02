@@ -33,24 +33,6 @@ def read_views(directory, num_views, scale, device):
     for image_path in image_paths:
         if 'normal' not in str(image_path):
             views.append(View.load(image_path, device))
-    print("Found {:d} views".format(len(views)))
-
-    if scale > 1:
-        for view in views:
-            view.scale(scale)
-        print("Scaled views to 1/{:d}th size".format(scale))
-
-    return views
-
-def read_views(directory, num_views, scale, device):
-    directory = Path(directory)
-
-    image_paths = sorted([path for path in directory.iterdir() if (path.is_file() and path.suffix == '.png')])
-    
-    views = []
-    for image_path in image_paths:
-        if 'normal' not in str(image_path):
-            views.append(View.load(image_path, device))
     
     # Ensure there are enough views to sample from
     if num_views != -1:
