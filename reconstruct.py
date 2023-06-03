@@ -186,8 +186,8 @@ if __name__ == '__main__':
         if loss_weights['mask'] > 0:
             losses['mask'] = mask_loss(views_subset, gbuffers)
         if loss_weights['normal'] > 0:
-            losses['normal'] = normal_loss(views_subset, gbuffers, torch.nn.MSELoss())
-            #losses['normal'] = normal_loss(views_subset, gbuffers, torch.nn.L1Loss())
+            #losses['normal'] = normal_loss(views_subset, gbuffers, torch.nn.MSELoss())
+            losses['normal'] = normal_loss(views_subset, gbuffers, torch.nn.L1Loss())
         if loss_weights['normal_c'] > 0:
             losses['normal_c'] = normal_consistency_loss(mesh)
         if loss_weights['laplacian'] > 0:

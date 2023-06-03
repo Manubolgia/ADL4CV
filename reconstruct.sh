@@ -35,7 +35,7 @@ cd ~/ADL4CV
 
 python3 reconstruct.py --input_dir ${input_dir}_$n/views --input_bbox ${input_dir}_$n/bbox.txt
 mv out/${views}_$n out/${views}_${n}_std
-python3 reconstruct.py --input_dir ${input_dir}_$n/views --input_bbox ${input_dir}_$n/bbox.txt --weight_normal 0.1
+python3 reconstruct.py --input_dir ${input_dir}_$n/views --input_bbox ${input_dir}_$n/bbox.txt --weight_normal 0.001
 mv out/${views}_$n out/${views}_${n}_norm
 
 rm -r ${input_dir}_$n
