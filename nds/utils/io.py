@@ -38,6 +38,7 @@ def read_views(directory, num_views, scale, device):
         if len(image_paths) < num_views:
             raise ValueError(f"Error: Requested {num_views} views, but only found {len(image_paths)}")
         # Select a subset of image paths before loading them
+        random.seed(33)
         image_paths = random.sample(image_paths, num_views)
     
     views = []

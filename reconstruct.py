@@ -143,7 +143,7 @@ if __name__ == '__main__':
         "shading": args.weight_shading
     }
     losses = {k: torch.tensor(0.0, device=device) for k in loss_weights}
-    losses_record = torch.zeros(5, 1 + args.iterations // args.save_frequency)
+    losses_record = torch.zeros(5, 1 + args.iterations // args.save_frequency).cpu()
     losses_i = 0
 
     progress_bar = tqdm(range(1, args.iterations + 1))
@@ -186,7 +186,8 @@ if __name__ == '__main__':
         if loss_weights['mask'] > 0:
             losses['mask'] = mask_loss(views_subset, gbuffers)
         if loss_weights['normal'] > 0:
-            losses['normal'] = normal_loss(views_subset, gbuffers)
+            losses['normal'] = normal_loss(views_subset, gbuffers, torch.nn.MSELoss())
+            #losses['normal'] = normal_loss(views_subset, gbuffers, torch.nn.L1Loss())
         if loss_weights['normal_c'] > 0:
             losses['normal_c'] = normal_consistency_loss(mesh)
         if loss_weights['laplacian'] > 0:
@@ -219,7 +220,7 @@ if __name__ == '__main__':
                     debug_gbuffer = renderer.render([debug_view], mesh, channels=['mask', 'position', 'normal', 'depth'], with_antialiasing=True)[0]
                     position = debug_gbuffer["position"]
                     normal = debug_gbuffer["normal"]
-                    depth = debug_gbuffer["depth"]
+                    depth = debug_gbuffer["depth"].cpu()
 
                     view_direction = torch.nn.functional.normalize(debug_view.camera.center - position, dim=-1)
 

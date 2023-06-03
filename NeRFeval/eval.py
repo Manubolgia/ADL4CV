@@ -37,6 +37,8 @@ if __name__ == "__main__":
     mesh = as_mesh(trimesh.load(FLAGS.mesh))
     ref = as_mesh(trimesh.load(FLAGS.ref))
 
+    print("Loaded meshes")
+
     # Make sure l=1.0 maps to 1/10th of the AABB. https://arxiv.org/pdf/1612.00603.pdf
     scale = 10.0 / np.amax(np.amax(ref.vertices, axis=0) - np.amin(ref.vertices, axis=0))
     ref.vertices = ref.vertices * scale
@@ -45,6 +47,8 @@ if __name__ == "__main__":
     # Sample mesh surfaces
     vpos_mesh = sample_mesh(mesh, FLAGS.n)
     vpos_ref = sample_mesh(ref, FLAGS.n)
+
+    print("Sampled meshes")
 
     dist1, dist2, idx1, idx2 = chamfer_dist(vpos_mesh[None, ...], vpos_ref[None, ...])
     loss = (torch.mean(dist1) + torch.mean(dist2)).item()

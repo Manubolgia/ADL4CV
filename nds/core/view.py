@@ -20,7 +20,7 @@ class View:
         self.color = color.to(device)
         self.mask = mask.to(device)
         self.camera = camera.to(device)
-        self.normal = normal.to(device)
+        self.normal = normal#.to(device)
         self.device = device
 
     @classmethod
@@ -66,7 +66,7 @@ class View:
     def to(self, device: str = "cpu"):
         self.color = self.color.to(device)
         self.mask = self.mask.to(device)
-        self.normal = self.normal.to(device)
+        self.normal = self.normal#.to(device)
         self.camera = self.camera.to(device)
         self.device = device
         return self
@@ -95,7 +95,7 @@ class View:
         self.mask = torch.FloatTensor(cv2.resize(self.mask.cpu().numpy(), dsize=(scaled_width, scaled_height), interpolation=cv2.INTER_NEAREST)).to(self.device)
         self.mask = self.mask.unsqueeze(-1) # Make sure the mask is HxWx1
 
-        self.normal = torch.FloatTensor(cv2.resize(self.normal.cpu().numpy(), dsize=(scaled_width, scaled_height), interpolation=cv2.INTER_LINEAR)).to(self.device)
+        self.normal = torch.FloatTensor(cv2.resize(self.normal.cpu().numpy(), dsize=(scaled_width, scaled_height), interpolation=cv2.INTER_LINEAR))#.to(self.device)
 
         self.camera.K = torch.FloatTensor(np.diag([scale_x, scale_y, 1])).to(self.device) @ self.camera.K  
     
