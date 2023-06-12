@@ -19,7 +19,8 @@ from nds.utils import (
     AABB, read_views, read_mesh, write_mesh, visualize_mesh_as_overlay, visualize_views, generate_mesh, mesh_generator_names
 )
 
-from nds.utils.save_losses import save_losses
+from nds.utils.debug import save_losses
+
 
 if __name__ == '__main__':
     parser = ArgumentParser(description='Multi-View Mesh Reconstruction with Neural Deferred Shading', formatter_class=ArgumentDefaultsHelpFormatter)
@@ -116,7 +117,6 @@ if __name__ == '__main__':
 
     # Configure the view sampler
     view_sampler = ViewSampler(views=views, **ViewSampler.get_parameters(args))
-    
     # Create the optimizer for the vertex positions 
     # (we optimize offsets from the initial vertex position)
     lr_vertices = args.lr_vertices
@@ -143,12 +143,13 @@ if __name__ == '__main__':
         "shading": args.weight_shading
     }
     losses = {k: torch.tensor(0.0, device=device) for k in loss_weights}
-    losses_record = torch.zeros(5, 1 + args.iterations // args.save_frequency).cpu()
+    losses_record = torch.zeros(5, 1 + args.iterations // args.save_frequency).to(device)
     losses_i = 0
 
     progress_bar = tqdm(range(1, args.iterations + 1))
     for iteration in progress_bar:
         progress_bar.set_description(desc=f'Iteration {iteration}')
+        
 
         if iteration in args.upsample_iterations:
             # Upsample the mesh by remeshing the surface with half the average edge length
@@ -206,7 +207,26 @@ if __name__ == '__main__':
         optimizer_vertices.step()
         optimizer_shader.step()
 
-        progress_bar.set_postfix({'loss': loss.detach().cpu(), 'normal_loss':losses['normal'].detach().cpu()*loss_weights['normal']})
+        #----------------------------------------Visualizing GPU usage and losses ------------------------------------
+
+        # Compute GPU memory stats
+        current = torch.cuda.memory_allocated()
+        peak = torch.cuda.max_memory_allocated()
+        total = torch.cuda.get_device_properties(0).total_memory
+        remaining = total - current
+
+        # Set GPU memory stats
+        progress_bar.set_postfix(
+            {
+            'loss': f'{loss.detach().cpu():.2f}', 
+            'n_loss': f'{losses["normal"].detach().cpu()*loss_weights["normal"]:.2f}',
+            'Curr': f'{current / 1024**2:.0f}MB', 
+            'Peak': f'{peak / 1024**2:.0f}MB', 
+            'Total': f'{total / 1024**2:.0f}MB'
+            }, refresh=True)
+
+
+        #progress_bar.set_postfix({'loss': loss.detach().cpu(), 'normal_loss':losses['normal'].detach().cpu()*loss_weights['normal']})
 
 
         # Visualizations

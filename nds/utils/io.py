@@ -24,7 +24,6 @@ def write_mesh(path, mesh):
     mesh_ = trimesh.Trimesh(vertices=vertices, faces=indices, process=False)
     mesh_.export(path)
 
-
 def read_views(directory, num_views, scale, device):
     directory = Path(directory)
 
@@ -49,6 +48,7 @@ def read_views(directory, num_views, scale, device):
 
     if scale > 1:
         for view in views:
+            view.scale_factor = True
             view.scale(scale)
         print("Scaled views to 1/{:d}th size".format(scale))
 

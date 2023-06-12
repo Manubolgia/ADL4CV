@@ -2,11 +2,11 @@ import torch
 from typing import Dict, List
 import cv2
 from nds.core import View
+import numpy as np
+from PIL import Image
 
 def normal_loss(views: List[View], gbuffers: List[Dict[str, torch.Tensor]], L = torch.nn.L1Loss()):
-    """ Compute the normal term as $$$the mean difference between the original masks and the rendered masks.
-
-    implementar L1 loss e ngular loss
+    """ Compute the normal term as the combination of the L (L1 or L2) and angular loss
     
     Args:
         views (List[View]): Views with normals
@@ -16,6 +16,11 @@ def normal_loss(views: List[View], gbuffers: List[Dict[str, torch.Tensor]], L = 
 
     loss = 0.0
     for view, gbuffer in zip(views, gbuffers):
+        if view.scale_factor:
+            vnormal = view.scale_normal(view.normal)
+        else:
+            vnormal = torch.FloatTensor(np.array(Image.open(view.normal).convert('RGB'))).to(view.device)
         normal = gbuffer["normal"]*255*gbuffer["mask"]
-        loss += L(view.normal, normal.cpu()) + ((1 - torch.cosine_similarity(view.normal, normal.cpu()))).mean()
+        loss += L(vnormal, normal) + ((1 - torch.cosine_similarity(vnormal, normal))).mean()
+        #loss += L(view.normal, normal) + ((1 - torch.cosine_similarity(view.normal, normal))).mean()
     return loss / len(views)

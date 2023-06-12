@@ -16,12 +16,15 @@ class View:
         device (torch.device): Device where the images and camera are stored
     """
 
-    def __init__(self, color, mask, normal, camera, device='cpu'):
+    def __init__(self, color, mask, normal, camera, scale_factor=False, device='cpu'):
         self.color = color.to(device)
         self.mask = mask.to(device)
         self.camera = camera.to(device)
-        self.normal = normal#.to(device)
+        #self.normal = normal.to(device)
         self.device = device
+        self.normal = normal
+        self.scale_factor = scale_factor
+
 
     @classmethod
     def load(cls, image_path, device='cpu'):
@@ -54,11 +57,13 @@ class View:
             mask = color[:, :, 3:]
         else:
             mask = torch.ones_like(color[:, :, 0:1])
+            print("No alpha channel")
 
         color = color[:, :, :3]
 
         # Get the normals
-        normal = torch.FloatTensor(np.array(Image.open(image_path.parent / (image_path.stem + "_normal.png")).convert('RGB')))
+        #normal = torch.FloatTensor(np.array(Image.open(image_path.parent / (image_path.stem + "_normal.png")).convert('RGB')))
+        normal = image_path.parent / (image_path.stem + "_normal.png")
         
 
         return cls(color, mask, normal, camera, device=device)
@@ -95,9 +100,15 @@ class View:
         self.mask = torch.FloatTensor(cv2.resize(self.mask.cpu().numpy(), dsize=(scaled_width, scaled_height), interpolation=cv2.INTER_NEAREST)).to(self.device)
         self.mask = self.mask.unsqueeze(-1) # Make sure the mask is HxWx1
 
-        self.normal = torch.FloatTensor(cv2.resize(self.normal.cpu().numpy(), dsize=(scaled_width, scaled_height), interpolation=cv2.INTER_LINEAR))#.to(self.device)
-
         self.camera.K = torch.FloatTensor(np.diag([scale_x, scale_y, 1])).to(self.device) @ self.camera.K  
+
+    def scale_normal(self, normal_path):
+        """ Scale the normal ground truth
+        """
+        scaled_height = self.color.shape[0]
+        scaled_width = self.color.shape[1]
+        vnormal = torch.FloatTensor(np.array(Image.open(self.normal).convert('RGB'))).to(self.device)
+        return torch.FloatTensor(cv2.resize(vnormal.cpu().numpy(), dsize=(scaled_width, scaled_height), interpolation=cv2.INTER_LINEAR)).to(self.device)
     
     def transform(self, A, A_inv=None):
         """ Transform the view pose with an affine mapping.
