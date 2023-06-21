@@ -102,6 +102,9 @@ class View:
 
         self.camera.K = torch.FloatTensor(np.diag([scale_x, scale_y, 1])).to(self.device) @ self.camera.K  
 
+
+## eliminate when implementing the predictor model, clean it up:
+
     def scale_normal(self, normal_path):
         """ Scale the normal ground truth
         """
@@ -111,13 +114,14 @@ class View:
         return torch.FloatTensor(cv2.resize(vnormal.cpu().numpy(), dsize=(scaled_width, scaled_height), interpolation=cv2.INTER_LINEAR)).to(self.device)
     
     def scale_depth(self, depth_path):
-        """ Scale the normal ground truth
+        """ Scale the depth ground truth
         """
         scaled_height = self.color.shape[0]
         scaled_width = self.color.shape[1]
         vdepth = torch.FloatTensor(np.array(Image.open(self.depth).convert('RGB'))).to(self.device)
         return torch.FloatTensor(cv2.resize(vdepth.cpu().numpy(), dsize=(scaled_width, scaled_height), interpolation=cv2.INTER_LINEAR)).to(self.device)
-    
+
+
 
     def transform(self, A, A_inv=None):
         """ Transform the view pose with an affine mapping.
