@@ -160,30 +160,24 @@ def depth_loss(views: List[View], gbuffers: List[Dict[str, torch.Tensor]], devic
     """
     loss = 0.0
     depth_loss_function = ScaleAndShiftInvariantLoss(alpha=0.5, scales=1)
-
-    #import matplotlib.pyplot as plt
-    
-    #idx=0
+    compare_size = 64
 
     for view, gbuffer in zip(views, gbuffers):
 
         depth_gt = torch.FloatTensor(np.array(Image.open(view.depth).convert('RGB')))[:,:,0:1]
-        depth_gt = scale_image(depth_gt, (32,32), device)
+        depth_gt = scale_image(depth_gt, (compare_size,compare_size), device)
 
-        depth_pred = scale_image(gbuffer["depth"].squeeze(), (32,32), device)
+        depth_pred = scale_image(gbuffer["depth"].squeeze(), (compare_size,compare_size), device)
         
         mask = (gbuffer['mask'] > 0.5) & (view.mask > 0.5)
-        mask = scale_image(mask, (32,32), device)
+        mask = scale_image(mask, (compare_size,compare_size), device)
 
         
-        loss += depth_loss_function(depth_pred.reshape(1, 32, 32), depth_gt.reshape(1, 32, 32), mask.reshape(1, 32, 32)) 
-
-        #plt.imsave(f'depth_gt_{idx}.png', depth_gt.cpu().numpy().squeeze(), cmap='gray')
-        #plt.imsave(f'depth_pred_{idx}.png', depth_pred.cpu().numpy().squeeze(), cmap='gray')
-        #plt.imsave(f'mask_{idx}.png', mask.cpu().numpy().squeeze(), cmap='gray')
-
-        #idx+=1
-        #print('done')
+        loss += depth_loss_function(
+            depth_pred.reshape(1, compare_size, compare_size), ...
+            depth_gt.reshape(1, compare_size, compare_size), ...
+            mask.reshape(1, compare_size, compare_size)
+            ) 
     
     
     return loss / len(views)
