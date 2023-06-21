@@ -10,7 +10,7 @@ from nds.core import (
     Mesh, Renderer
 )
 from nds.losses import (
-    mask_loss, normal_consistency_loss, laplacian_loss, shading_loss, normal_loss
+    mask_loss, normal_consistency_loss, laplacian_loss, shading_loss, depth_loss
 )
 from nds.modules import (
     SpaceNormalization, NeuralShader, ViewSampler
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     parser.add_argument('--weight_normal_c', type=float, default=0.1, help="Weight of the normal consistency term")
     parser.add_argument('--weight_laplacian', type=float, default=40.0, help="Weight of the laplacian term")
     parser.add_argument('--weight_shading', type=float, default=1.0, help="Weight of the shading term")
-    parser.add_argument('--weight_normal', type=float, default=0.0, help="Weight of the normal term")
+    parser.add_argument('--weight_depth', type=float, default=0.0, help="Weight of the depth term")
     parser.add_argument('--shading_percentage', type=float, default=0.75, help="Percentage of valid pixels considered in the shading loss (0-1)")
     parser.add_argument('--hidden_features_layers', type=int, default=3, help="Number of hidden layers in the positional feature part of the neural shader")
     parser.add_argument('--hidden_features_size', type=int, default=256, help="Width of the hidden layers in the neural shader")
@@ -137,7 +137,7 @@ if __name__ == '__main__':
     # Initialize the loss weights and losses
     loss_weights = {
         "mask": args.weight_mask,
-        "normal": args.weight_normal,
+        "depth": args.weight_depth,
         "normal_c":args.weight_normal_c,
         "laplacian": args.weight_laplacian,
         "shading": args.weight_shading
@@ -181,14 +181,14 @@ if __name__ == '__main__':
 
         # Render the mesh from the views
         # Perform antialiasing here because we cannot antialias after shading if we only shade a some of the pixels
-        gbuffers = renderer.render(views_subset, mesh, channels=['mask', 'position', 'normal'], with_antialiasing=True) 
+        gbuffers = renderer.render(views_subset, mesh, channels=['mask', 'position', 'normal', 'depth'], with_antialiasing=True) 
 
         # Combine losses and weights
         if loss_weights['mask'] > 0:
             losses['mask'] = mask_loss(views_subset, gbuffers)
-        if loss_weights['normal'] > 0:
+        if loss_weights['depth'] > 0:
             #losses['normal'] = normal_loss(views_subset, gbuffers, torch.nn.MSELoss())
-            losses['normal'] = normal_loss(views_subset, gbuffers, torch.nn.L1Loss())
+            losses['depth'] = depth_loss(views_subset, gbuffers, torch.nn.L1Loss())
         if loss_weights['normal_c'] > 0:
             losses['normal_c'] = normal_consistency_loss(mesh)
         if loss_weights['laplacian'] > 0:
@@ -219,7 +219,7 @@ if __name__ == '__main__':
         progress_bar.set_postfix(
             {
             'loss': f'{loss.detach().cpu():.2f}', 
-            'n_loss': f'{losses["normal"].detach().cpu()*loss_weights["normal"]:.2f}',
+            'd_loss': f'{losses["depth"].detach().cpu()*loss_weights["depth"]:.2f}',
             'Curr': f'{current / 1024**2:.0f}MB', 
             'Peak': f'{peak / 1024**2:.0f}MB', 
             'Total': f'{total / 1024**2:.0f}MB'
@@ -283,8 +283,8 @@ if __name__ == '__main__':
             try:
                 if loss_weights['mask'] > 0:
                     losses_record[0,losses_i] = losses['mask'].cpu()
-                if loss_weights['normal'] > 0:
-                    losses_record[1,losses_i] = losses['normal'].cpu()
+                if loss_weights['depth'] > 0:
+                    losses_record[1,losses_i] = losses['depth'].cpu()
                 if loss_weights['normal_c'] > 0:
                     losses_record[2,losses_i] = losses['normal_c'].cpu()
                 if loss_weights['laplacian'] > 0:

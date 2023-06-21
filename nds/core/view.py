@@ -16,13 +16,13 @@ class View:
         device (torch.device): Device where the images and camera are stored
     """
 
-    def __init__(self, color, mask, normal, camera, scale_factor=False, device='cpu'):
+    def __init__(self, color, mask, depth, camera, scale_factor=False, device='cpu'):
         self.color = color.to(device)
         self.mask = mask.to(device)
         self.camera = camera.to(device)
         #self.normal = normal.to(device)
         self.device = device
-        self.normal = normal
+        self.depth = depth
         self.scale_factor = scale_factor
 
 
@@ -63,15 +63,15 @@ class View:
 
         # Get the normals
         #normal = torch.FloatTensor(np.array(Image.open(image_path.parent / (image_path.stem + "_normal.png")).convert('RGB')))
-        normal = image_path.parent / (image_path.stem + "_normal.png")
+        depth = image_path.parent / (image_path.stem + "_depth.png")
         
 
-        return cls(color, mask, normal, camera, device=device)
+        return cls(color, mask, depth, camera, device=device)
 
     def to(self, device: str = "cpu"):
         self.color = self.color.to(device)
         self.mask = self.mask.to(device)
-        self.normal = self.normal#.to(device)
+        self.depth = self.depth#.to(device)
         self.camera = self.camera.to(device)
         self.device = device
         return self
@@ -110,6 +110,15 @@ class View:
         vnormal = torch.FloatTensor(np.array(Image.open(self.normal).convert('RGB'))).to(self.device)
         return torch.FloatTensor(cv2.resize(vnormal.cpu().numpy(), dsize=(scaled_width, scaled_height), interpolation=cv2.INTER_LINEAR)).to(self.device)
     
+    def scale_depth(self, depth_path):
+        """ Scale the normal ground truth
+        """
+        scaled_height = self.color.shape[0]
+        scaled_width = self.color.shape[1]
+        vdepth = torch.FloatTensor(np.array(Image.open(self.depth).convert('RGB'))).to(self.device)
+        return torch.FloatTensor(cv2.resize(vdepth.cpu().numpy(), dsize=(scaled_width, scaled_height), interpolation=cv2.INTER_LINEAR)).to(self.device)
+    
+
     def transform(self, A, A_inv=None):
         """ Transform the view pose with an affine mapping.
 

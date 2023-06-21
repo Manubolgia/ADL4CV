@@ -29,8 +29,9 @@ def read_views(directory, num_views, scale, device):
 
     image_paths = sorted([path for path in directory.iterdir() if (path.is_file() and path.suffix == '.png')])
 
-    # Filter out the 'normal' images
-    image_paths = [path for path in image_paths if 'normal' not in str(path)]
+    # Filter out the 'normal' and 'depth' images
+    image_paths = [path for path in image_paths if 'normal.png' not in str(path)]
+    image_paths = [path for path in image_paths if 'depth.png' not in str(path)]
 
     # Ensure there are enough views to sample from
     if num_views != -1:
