@@ -174,8 +174,8 @@ def depth_loss(views: List[View], gbuffers: List[Dict[str, torch.Tensor]], devic
 
         
         loss += depth_loss_function(
-            depth_pred.reshape(1, compare_size, compare_size), ...
-            depth_gt.reshape(1, compare_size, compare_size), ...
+            depth_pred.reshape(1, compare_size, compare_size),
+            depth_gt.reshape(1, compare_size, compare_size),
             mask.reshape(1, compare_size, compare_size)
             ) 
     
