@@ -288,16 +288,33 @@ if __name__ == '__main__':
             try:
                 if loss_weights['mask'] > 0:
                     losses_record['mask'].append(losses['mask'].cpu().item())
+                else:
+                    losses_record['mask'].append(0)
+
                 if loss_weights['normal'] > 0:
                     losses_record['normal'].append(losses['normal'].cpu().item())
+                else:
+                    losses_record['normal'].append(0)    
+
                 if loss_weights['depth'] > 0:
                     losses_record['depth'].append(losses['depth'].cpu().item())
+                else:
+                    losses_record['depth'].append(0)
+
                 if loss_weights['normal_c'] > 0:
                     losses_record['normal_c'].append(losses['normal_c'].cpu().item())
+                else:
+                    losses_record['normal_c'].append(0)
+
                 if loss_weights['laplacian'] > 0:
                     losses_record['laplacian'].append(losses['laplacian'].cpu().item())
+                else:
+                    losses_record['laplacian'].append(0)
+
                 if loss_weights['shading'] > 0:
                     losses_record['shading'].append(losses['shading'].cpu().item())
+                else:
+                    losses_record['shading'].append(0)                    
             except:
                 print('There was an error while saving the losses')
     
