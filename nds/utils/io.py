@@ -49,7 +49,6 @@ def read_views(directory, num_views, scale, device):
 
     if scale > 1:
         for view in views:
-            view.scale_factor = True
             view.scale(scale)
         print("Scaled views to 1/{:d}th size".format(scale))
 

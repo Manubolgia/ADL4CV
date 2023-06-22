@@ -147,6 +147,7 @@ class ScaleAndShiftInvariantLoss(nn.Module):
 
     prediction_ssi = property(__get_prediction_ssi)
 # end copy    
+
 def scale_image(image, out_size, device):
     """ Scale an image to a desired size """
     image = image.cpu().detach().numpy().astype(np.float32)
