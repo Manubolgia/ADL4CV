@@ -50,6 +50,7 @@ if __name__ == '__main__':
     parser.add_argument('--activation', type=str, default='relu', choices=(['relu', 'sine']), help="Activation function used in the neural shader")
     parser.add_argument('--fft_scale', type=int, default=4, help="Scale parameter of frequency-based input encodings in the neural shader")
     parser.add_argument('--num_views', type=int, default=-1, help="Number of input views chosen at random from the input_dir")
+    parser.add_argument('--compare_size', type=int, default=200, help="Re-scaled size of normals and depth images used during loss calculation")
     # Add module arguments
     ViewSampler.add_arguments(parser)
 
@@ -188,7 +189,7 @@ if __name__ == '__main__':
             losses['mask'] = mask_loss(views_subset, gbuffers)
         if loss_weights['depth'] > 0:
             #losses['normal'] = normal_loss(views_subset, gbuffers, torch.nn.MSELoss())
-            losses['depth'] = depth_loss(views_subset, gbuffers, device=device)
+            losses['depth'] = depth_loss(views_subset, gbuffers, args.compare_size, device=device)
         if loss_weights['normal_c'] > 0:
             losses['normal_c'] = normal_consistency_loss(mesh)
         if loss_weights['laplacian'] > 0:

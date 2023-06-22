@@ -153,14 +153,13 @@ def scale_image(image, out_size, device):
     resized_image = cv2.resize(image, dsize=(out_size[0], out_size[1]), interpolation=cv2.INTER_LINEAR)
     return torch.FloatTensor(resized_image).to(device)
 
-def depth_loss(views: List[View], gbuffers: List[Dict[str, torch.Tensor]], device):
+def depth_loss(views: List[View], gbuffers: List[Dict[str, torch.Tensor]], compare_size, device):
     """ Compute the depth term 
     Args:
         
     """
     loss = 0.0
     depth_loss_function = ScaleAndShiftInvariantLoss(alpha=0.5, scales=1)
-    compare_size = 64
 
     for view, gbuffer in zip(views, gbuffers):
 
