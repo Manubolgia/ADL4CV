@@ -1,8 +1,21 @@
 import torch
 import pandas as pd
 
+def equalize_losses(losses_record):
+    # Find maximum length among all loss records
+    max_len = max(len(record['loss_value']) for record in losses_record)
+
+    # Pad shorter loss records with zeros
+    for record in losses_record:
+        record_len = len(record['loss_value'])
+        if record_len < max_len:
+            record['loss_value'].extend([0.0]*(max_len - record_len))
+    return losses_record
+
+
 def save_losses(losses_record, plots_save_path):
     # Convert to DataFrame
+    losses_record = equalize_losses(losses_record)
     df = pd.DataFrame(losses_record)
 
     # Save to csv
