@@ -32,9 +32,11 @@ if __name__ == "__main__":
     parser.add_argument('-n', type=int, default=2500000)
     parser.add_argument('--mesh', type=str)
     parser.add_argument('--ref', type=str)
+    parser.add_argument('--iter', type=int)
     FLAGS = parser.parse_args()
 
-    mesh = as_mesh(trimesh.load(FLAGS.mesh))
+    mesh_path = FLAGS.mesh + "/mesh_%06d.obj" % FLAGS.iter
+    mesh = as_mesh(trimesh.load(mesh_path))
     ref = as_mesh(trimesh.load(FLAGS.ref))
 
     print("Loaded meshes")
@@ -53,9 +55,9 @@ if __name__ == "__main__":
     dist1, dist2, idx1, idx2 = chamfer_dist(vpos_mesh[None, ...], vpos_ref[None, ...])
     loss = (torch.mean(dist1) + torch.mean(dist2)).item()
 
-    instance_name = FLAGS.mesh.split('/')[-3]
+    instance_name = FLAGS.mesh.split('/')[-2]
 
-    path = 'eval_results/%s.txt' % instance_name
+    path = 'eval_results/%s_%s.txt' % (instance_name, FLAGS.iter)
     isExist = os.path.exists("eval_results/")
     if not isExist:
         os.makedirs("eval_results/")
