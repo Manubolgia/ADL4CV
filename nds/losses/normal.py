@@ -22,12 +22,15 @@ def normal_loss(views: List[View], gbuffers: List[Dict[str, torch.Tensor]], L, c
     """
     loss = 0.0
     for view, gbuffer in zip(views, gbuffers):
-
         vnormal = torch.FloatTensor(np.array(Image.open(view.normal).convert('RGB'))).to(view.device)
         vnormal = scale_image(vnormal, (compare_size,compare_size), device)
+        #apply mask to the view normal
+        #vnormal = vnormal * gbuffer["mask"] + (1-gbuffer["mask"]) * 255
 
-        normal = torch.clamp(gbuffer["normal"], min=0)
-        normal *= 255*gbuffer["mask"]
+        normal = (0.5*(gbuffer["normal"] @ view.camera.R.T + 1)) * gbuffer["mask"] + (1-gbuffer["mask"])
+        normal *= 255
+        #normal = torch.clamp(gbuffer["normal"], min=0)
+        #normal *= 255*gbuffer["mask"]
         normal = scale_image(normal, (compare_size,compare_size), device)
 
         loss += L(vnormal, normal) + ((1 - torch.cosine_similarity(vnormal, normal))).mean()

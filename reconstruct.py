@@ -51,6 +51,7 @@ if __name__ == '__main__':
     parser.add_argument('--activation', type=str, default='relu', choices=(['relu', 'sine']), help="Activation function used in the neural shader")
     parser.add_argument('--fft_scale', type=int, default=4, help="Scale parameter of frequency-based input encodings in the neural shader")
     parser.add_argument('--num_views', type=int, default=-1, help="Number of input views chosen at random from the input_dir")
+    parser.add_argument('--loss', type=str, default='L1', help="Choose between L1 and L2 loss, default is L1")
     parser.add_argument('--compare_size', type=int, default=200, help="Re-scaled size of normals and depth images used during loss calculation")
     # Add module arguments
     ViewSampler.add_arguments(parser)
@@ -188,9 +189,11 @@ if __name__ == '__main__':
         # Combine losses and weights
         if loss_weights['mask'] > 0:
             losses['mask'] = mask_loss(views_subset, gbuffers)
-        if loss_weights['depth'] > 0:
-            #losses['normal'] = normal_loss(views_subset, gbuffers, torch.nn.MSELoss())
-            losses['normal'] = normal_loss(views_subset, gbuffers, torch.nn.L1Loss(), args.compare_size, device=device)
+        if loss_weights['normal'] > 0:
+            if args.loss == "L2":
+                losses['normal'] = normal_loss(views_subset, gbuffers, torch.nn.MSELoss(), args.compare_size, device=device)
+            else:
+                losses['normal'] = normal_loss(views_subset, gbuffers, torch.nn.L1Loss(), args.compare_size, device=device)
         if loss_weights['depth'] > 0:
             losses['depth'] = depth_loss(views_subset, gbuffers, args.compare_size, device=device)
         if loss_weights['normal_c'] > 0:
@@ -256,22 +259,23 @@ if __name__ == '__main__':
                     plt.imsave(shaded_path / f'neuralshading_{iteration}.png', shaded_image.cpu().numpy())
 
                     # Save a normal map in camera space
-                    normal = torch.clamp(normal, min=0)
+                    #normal = torch.clamp(normal, min=0)
                     normal_path = (images_save_path / str(vi) / "normal") if use_fixed_views else (images_save_path / "normal")
                     normal_path.mkdir(parents=True, exist_ok=True)
                     R = torch.tensor([[1, 0, 0], [0, -1, 0], [0, 0, -1]], device=device, dtype=torch.float32)
-                    #normal_image = (0.5*(normal @ debug_view.camera.R.T @ R.T + 1)) * debug_gbuffer["mask"] + (1-debug_gbuffer["mask"])
-                    normal_image = (normal)*255
-                    normal_image = normal_image * debug_gbuffer["mask"].expand_as(normal_image)
-                    normal_image = normal_image.cpu().numpy().astype(np.uint8)
-                    plt.imsave(normal_path / f'neuralshading_{iteration}.png', normal_image)
+                    normal_image = (0.5*(normal @ debug_view.camera.R.T + 1)) * debug_gbuffer["mask"] + (1-debug_gbuffer["mask"])
+                    #normal_image *= 255
+                    #normal_image = (normal)*255
+                    #normal_image = normal_image * debug_gbuffer["mask"].expand_as(normal_image)
+                    #normal_image = normal_image.cpu().numpy().astype(np.uint8)
+                    #plt.imsave(normal_path / f'neuralshading_{iteration}.png', normal_image)
                     #normal_image = (0.5*(normal @ debug_view.camera.R.T + 1)) * debug_gbuffer["mask"] + (1-debug_gbuffer["mask"])
 
 
                     #normal_image = (0.5*(normal + 1)*255)
                     #normal_image = normal_image * debug_gbuffer["mask"].expand_as(normal_image)
                     #normal_image = normal_image.cpu().numpy().astype(np.uint8)
-                    #plt.imsave(normal_path / f'neuralshading_{iteration}.png', normal_image.cpu().numpy())
+                    plt.imsave(normal_path / f'neuralshading_{iteration}.png', normal_image.cpu().numpy())
 
                     # Save a depth map in camera space
                     depth_path = (images_save_path / str(vi) / "depth") if use_fixed_views else (images_save_path / "depth")

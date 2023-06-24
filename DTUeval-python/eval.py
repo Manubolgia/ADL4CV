@@ -163,5 +163,4 @@ if __name__ == '__main__':
         print("The new directory is created!")
 
     with open(path, 'w') as f:
-        f.write('mean_d2s: %s \nmean_s2d: %s \nover:all: %s' 
-                % (mean_d2s, mean_s2d, over_all)
+        f.write('mean_d2s: %s \nmean_s2d: %s \noverall: %s' % (mean_d2s, mean_s2d, over_all))

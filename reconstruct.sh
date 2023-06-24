@@ -33,9 +33,11 @@ done
 ln -s ${input_dir}/bbox.txt ${input_dir}_$n/bbox.txt
 cd ~/ADL4CV
 
-python3 reconstruct.py --input_dir ${input_dir}_$n/views --input_bbox ${input_dir}_$n/bbox.txt
+python3 reconstruct.py --input_dir ${input_dir}_$n/views --input_bbox ${input_dir}_$n/bbox.txt --iterations 2000 --upsample_iterations 500 1000 1500
 mv out/${views}_$n out/${views}_${n}_std
-python3 reconstruct.py --input_dir ${input_dir}_$n/views --input_bbox ${input_dir}_$n/bbox.txt --weight_normal 0.001
-mv out/${views}_$n out/${views}_${n}_norm
+python3 reconstruct.py --input_dir ${input_dir}_$n/views --input_bbox ${input_dir}_$n/bbox.txt --weight_normal 0.001 --iterations 2000 --upsample_iterations 500 1000 1500
+mv out/${views}_$n out/${views}_${n}_norm_l1
+python3 reconstruct.py --input_dir ${input_dir}_$n/views --input_bbox ${input_dir}_$n/bbox.txt --weight_normal 0.00001 --loss L2 --iterations 2000 --upsample_iterations 500 1000 1500
+mv out/${views}_$n out/${views}_${n}_norm_l2
 
 rm -r ${input_dir}_$n
