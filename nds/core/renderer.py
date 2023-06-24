@@ -109,7 +109,7 @@ class Renderer:
                 gbuffer["normal"] = dr.antialias(normal, rast, pos, idx)[0] if with_antialiasing else normal[0]
 
             if "depth" in channels:
-                gbuffer["depth"] = view.project(gbuffer["position"], depth_as_distance=True)[..., 2:3]
+                gbuffer["depth"] = view.project(gbuffer["position"], depth_as_distance=False)[..., 2:3]
 
             gbuffers += [gbuffer]
 
