@@ -153,11 +153,11 @@ def save_outputs(img_path, output_file_name):
             output = output.clamp(0,1)
             
             #np.save(save_path.replace('.png', '.npy'), output.detach().cpu().numpy()[0])
-            output.detach().cpu().numpy()
-            save_path.replace('.png', '.npy')
+            #output.detach().cpu().numpy()
+            #save_path.replace('.png', '.npy')
             #output = 1 - output
 #             output = standardize_depth_map(output)
-            plt.imsave(save_path, output.detach().cpu().squeeze(),cmap='viridis')
+            plt.imsave(save_path, output.detach().cpu().squeeze(),cmap='gray')
             
         else:
             #import pdb; pdb.set_trace()

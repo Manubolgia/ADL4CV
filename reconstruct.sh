@@ -13,7 +13,7 @@ mkdir "${input_dir}_$n"
 mkdir "${input_dir}_$n/views"
 cd "${input_dir}/views"
 imgs_num=$(ls | wc -l)
-let "imgs_num = $imgs_num / 5 - 1"
+let "imgs_num = $imgs_num / 6 - 1"
 indexes=$(shuf -i 0-$imgs_num -n $n)
 
 
@@ -29,15 +29,21 @@ do
         ln -s ${input_dir}/views/$file_t ${input_dir}_$n/views/$file_t
         file_t=$(printf "cam%06d_normal.png" $index)
         ln -s ${input_dir}/views/$file_t ${input_dir}_$n/views/$file_t
+        file_t=$(printf "cam%06d_depth.png" $index)
+        ln -s ${input_dir}/views/$file_t ${input_dir}_$n/views/$file_t
 done
 ln -s ${input_dir}/bbox.txt ${input_dir}_$n/bbox.txt
 cd ~/ADL4CV
 
 python3 reconstruct.py --input_dir ${input_dir}_$n/views --input_bbox ${input_dir}_$n/bbox.txt --iterations 2000 --upsample_iterations 500 1000 1500
 mv out/${views}_$n out/${views}_${n}_std
-python3 reconstruct.py --input_dir ${input_dir}_$n/views --input_bbox ${input_dir}_$n/bbox.txt --weight_normal 0.001 --iterations 2000 --upsample_iterations 500 1000 1500
-mv out/${views}_$n out/${views}_${n}_norm_l1
-python3 reconstruct.py --input_dir ${input_dir}_$n/views --input_bbox ${input_dir}_$n/bbox.txt --weight_normal 0.00001 --loss L2 --iterations 2000 --upsample_iterations 500 1000 1500
-mv out/${views}_$n out/${views}_${n}_norm_l2
+python3 reconstruct.py --input_dir ${input_dir}_$n/views --input_bbox ${input_dir}_$n/bbox.txt --weight_depth 0.01 --weight_normal 0.001 --iterations 2000 --upsample_iterations 500 1000 1500
+mv out/${views}_$n out/${views}_${n}_full
+#python3 reconstruct.py --input_dir ${input_dir}_$n/views --input_bbox ${input_dir}_$n/bbox.txt --iterations 2000 --upsample_iterations 500 1000 1500
+#mv out/${views}_$n out/${views}_${n}_std
+#python3 reconstruct.py --input_dir ${input_dir}_$n/views --input_bbox ${input_dir}_$n/bbox.txt --weight_normal 0.001 --iterations 2000 --upsample_iterations 500 1000 1500
+#mv out/${views}_$n out/${views}_${n}_norm_l1
+#python3 reconstruct.py --input_dir ${input_dir}_$n/views --input_bbox ${input_dir}_$n/bbox.txt --weight_normal 0.00001 --loss L2 --iterations 2000 --upsample_iterations 500 1000 1500
+#mv out/${views}_$n out/${views}_${n}_norm_l2
 
 rm -r ${input_dir}_$n

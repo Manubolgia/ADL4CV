@@ -109,8 +109,9 @@ class Renderer:
                 gbuffer["normal"] = dr.antialias(normal, rast, pos, idx)[0] if with_antialiasing else normal[0]
 
             if "depth" in channels:
-                gbuffer["depth"] = view.project(gbuffer["position"], depth_as_distance=False)[..., 2:3]
-
+                depth_scaled = view.project(gbuffer["position"], depth_as_distance=True)[..., 2:3]
+                depth_scaled = ((depth_scaled - depth_scaled.min()) * (1/(depth_scaled.max() - depth_scaled.min()) * 255)).to(dtype=torch.uint8)
+                gbuffer["depth"] = depth_scaled
             gbuffers += [gbuffer]
 
         return gbuffers

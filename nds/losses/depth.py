@@ -166,9 +166,11 @@ def depth_loss(views: List[View], gbuffers: List[Dict[str, torch.Tensor]], compa
 
         depth_gt = torch.FloatTensor(np.array(Image.open(view.depth).convert('RGB')))[:,:,0:1]
         depth_gt = scale_image(depth_gt, (compare_size,compare_size), device)
+        depth_gt = process_depth(depth_gt)
 
         depth_pred = scale_image(gbuffer["depth"].squeeze(), (compare_size,compare_size), device)
-        
+        depth_pred = process_depth(depth_pred)
+
         mask = (gbuffer['mask'] > 0.5) & (view.mask > 0.5)
         mask = scale_image(mask, (compare_size,compare_size), device)
 
@@ -182,4 +184,37 @@ def depth_loss(views: List[View], gbuffers: List[Dict[str, torch.Tensor]], compa
     
     return loss / len(views)
 
+def process_depth(image_B):
+    """
+    This function processes depth ground truth images from the synthetic Nerf dataset.
+    It modifies the range of depth values to the 0-255 scale and inverts the depth values.
+    
+    Parameters:
+    image_B: tensor, pytorch tensor of the depth
+    
+    Return:
+    image_B_modified: pytorch tensor, modified depth image with nearest point intensity = 0 and furthest =255
+    
+    """
+
+    # Ensure the image array is of type float
+    image_B = image_B.to(dtype=torch.float64)
+    
+    # Define the new maximum value for the image
+    Ra = 255.0
+
+    image_min = np.amin(image_B.cpu().numpy())
+    image_max = np.amax(image_B.cpu().numpy())
+    # Compute the original range of pixel values
+    Rb = image_max - image_min
+
+    # Adjust the pixel value range of the image
+    image_B_modified = image_B - image_min 
+    image_B_modified *= Ra / Rb
+
+    # Convert the float array to uint8
+    image_B_modified = image_B_modified.to(dtype=torch.uint8)
+
+    # Invert the depth values
+    return image_B_modified
 

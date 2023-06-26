@@ -12,11 +12,11 @@ done
 input_dir="${input_path}/${views}"
 cd "${input_dir}/views"
 imgs_num=$(ls | wc -l)
-let "imgs_num = $imgs_num / 5"
+let "imgs_num = $imgs_num / 6"
 quarter=$((imgs_num / 4))
 half=$((imgs_num / 2))
 cd ~/ADL4CV
-for num in 12 #10 $quarter $half $imgs_num
+for num in 5 10 $quarter $half $imgs_num
 do
         ./reconstruct.sh -i $input_path -v $views -n $num
         
@@ -34,8 +34,11 @@ do
                 #do
                         cd NeRFeval/
                         python eval.py --mesh ~/ADL4CV/out/${views}_${num}_std/meshes --ref ~/NERF_Dataset_ocv/ground_truth/${views}_gt.obj --iter 2000 -n 2500000
-                        python eval.py --mesh ~/ADL4CV/out/${views}_${num}_norm_l1/meshes --ref ~/NERF_Dataset_ocv/ground_truth/${views}_gt.obj --iter 2000 -n 2500000
-                        python eval.py --mesh ~/ADL4CV/out/${views}_${num}_norm_l2/meshes --ref ~/NERF_Dataset_ocv/ground_truth/${views}_gt.obj --iter 2000 -n 2500000
+                        python eval.py --mesh ~/ADL4CV/out/${views}_${num}_full/meshes --ref ~/NERF_Dataset_ocv/ground_truth/${views}_gt.obj --iter 2000 -n 2500000
+                        
+                        #python eval.py --mesh ~/ADL4CV/out/${views}_${num}_std/meshes --ref ~/NERF_Dataset_ocv/ground_truth/${views}_gt.obj --iter 2000 -n 2500000
+                        #python eval.py --mesh ~/ADL4CV/out/${views}_${num}_norm_l1/meshes --ref ~/NERF_Dataset_ocv/ground_truth/${views}_gt.obj --iter 2000 -n 2500000
+                        #python eval.py --mesh ~/ADL4CV/out/${views}_${num}_norm_l2/meshes --ref ~/NERF_Dataset_ocv/ground_truth/${views}_gt.obj --iter 2000 -n 2500000
                         cd ..
                 #done
         fi
