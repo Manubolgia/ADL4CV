@@ -20,7 +20,7 @@ from nds.utils import (
 )
 
 from nds.utils.debug import save_losses
-
+import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
     parser = ArgumentParser(description='Multi-View Mesh Reconstruction with Neural Deferred Shading', formatter_class=ArgumentDefaultsHelpFormatter)
@@ -239,7 +239,7 @@ if __name__ == '__main__':
 
         # Visualizations
         if (args.visualization_frequency > 0) and shader and (iteration == 1 or iteration % args.visualization_frequency == 0):
-            import matplotlib.pyplot as plt
+            
             with torch.no_grad():
                 use_fixed_views = len(args.visualization_views) > 0
                 view_indices = args.visualization_views if use_fixed_views else [np.random.choice(list(range(len(views_subset))))]

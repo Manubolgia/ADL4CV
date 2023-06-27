@@ -144,7 +144,7 @@ class View:
         self.camera.R = torch.from_numpy(R).to(self.device)
         self.camera.t = torch.from_numpy(t).to(self.device)
         
-    def project(self, points, depth_as_distance=False):
+    def project(self, points, depth_as_distance=True):
         """ Project points to the view's image plane according to the equation x = K*(R*X + t).
 
         Args:

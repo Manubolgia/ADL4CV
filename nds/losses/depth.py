@@ -8,7 +8,6 @@ from torch import nn
 import math
 import cv2
 
-
 # copy from MiDaS
 def compute_scale_and_shift(prediction, target, mask):
     # system matrix: A = [[a_00, a_01], [a_10, a_11]]
@@ -164,11 +163,11 @@ def depth_loss(views: List[View], gbuffers: List[Dict[str, torch.Tensor]], compa
 
     for view, gbuffer in zip(views, gbuffers):
 
-        depth_gt = torch.FloatTensor(np.array(Image.open(view.depth).convert('RGB')))[:,:,0:1]
+        depth_gt = torch.FloatTensor(np.array(Image.open(view.depth).convert('RGB')))[:,:,0:1]*view.mask.cpu()
         depth_gt = scale_image(depth_gt, (compare_size,compare_size), device)
         depth_gt = process_depth(depth_gt)
 
-        depth_pred = scale_image(gbuffer["depth"].squeeze(), (compare_size,compare_size), device)
+        depth_pred = scale_image(gbuffer["depth"] * gbuffer["mask"], (compare_size,compare_size), device)
         depth_pred = process_depth(depth_pred)
 
         mask = (gbuffer['mask'] > 0.5) & (view.mask > 0.5)
@@ -181,13 +180,12 @@ def depth_loss(views: List[View], gbuffers: List[Dict[str, torch.Tensor]], compa
             mask.reshape(1, compare_size, compare_size)
             ) 
     
-    
     return loss / len(views)
 
 def process_depth(image_B):
     """
     This function processes depth ground truth images from the synthetic Nerf dataset.
-    It modifies the range of depth values to the 0-255 scale and inverts the depth values.
+    It modifies the range of depth values to the 0-255 scale
     
     Parameters:
     image_B: tensor, pytorch tensor of the depth
