@@ -6,6 +6,8 @@ import numpy as np
 # pip install trimesh[all]
 import trimesh
 import os
+from metrics import calculate_fscore
+import open3d
 
 # https://github.com/otaheri/chamfer_distance
 from chamfer_distance import ChamferDistance
@@ -23,7 +25,9 @@ def as_mesh(scene_or_mesh):
 
 def sample_mesh(m, n):
     vpos, _ = trimesh.sample.sample_surface(m, n)
-    return torch.tensor(vpos, dtype=torch.float32, device="cuda")
+    pcd = open3d.geometry.PointCloud()
+    pcd.points = open3d.utility.Vector3dVector(vpos)
+    return torch.tensor(vpos, dtype=torch.float32, device="cuda"), pcd
 
 if __name__ == "__main__":
     chamfer_dist = ChamferDistance()
@@ -47,14 +51,14 @@ if __name__ == "__main__":
     mesh.vertices = mesh.vertices * scale
 
     # Sample mesh surfaces
-    vpos_mesh = sample_mesh(mesh, FLAGS.n)
-    vpos_ref = sample_mesh(ref, FLAGS.n)
+    vpos_mesh, pcd_mesh = sample_mesh(mesh, FLAGS.n)
+    vpos_ref, pcd_ref = sample_mesh(ref, FLAGS.n)
 
     print("Sampled meshes")
 
     dist1, dist2, idx1, idx2 = chamfer_dist(vpos_mesh[None, ...], vpos_ref[None, ...])
     loss = (torch.mean(dist1) + torch.mean(dist2)).item()
-
+    fscore, precision, recall = calculate_fscore(pcd_ref, pcd_mesh)
     instance_name = FLAGS.mesh.split('/')[-2]
 
     path = 'eval_results/%s_%s.txt' % (instance_name, FLAGS.iter)
@@ -64,5 +68,5 @@ if __name__ == "__main__":
         print("The new directory is created!")
 
     with open(path, 'w') as f:
-        f.write('dist1: %s \ndist2: %s \nidx1: %s \nidx2: %s \nloss: %f \ntris: %s' 
-                % (torch.mean(dist1).item(), torch.mean(dist2).item(), idx1.float().mean().item(), idx2.float().mean().item(), loss, mesh.faces.shape[0]))
+        f.write('dist1: %s \ndist2: %s \nidx1: %s \nidx2: %s \nloss: %f \ntris: %s \n\nfscore: %s \nprecision: %s \nrecall: %s' 
+                % (torch.mean(dist1).item(), torch.mean(dist2).item(), idx1.float().mean().item(), idx2.float().mean().item(), loss, mesh.faces.shape[0], fscore, precision, recall))
