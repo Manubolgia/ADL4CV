@@ -7,8 +7,8 @@ vis_freq=500
 
 weight_depth_values=(0.001 0.005 0.01 0.05)
 weight_normal_values=(0.001 0.005 0.01 0.05)
-normal_weight_factor_values=(0 0.9 1.5 4)
-depth_weight_factor_values=(0 0.9 1.5 4)
+normal_weight_factor_values=(0.9 1 1.5)
+depth_weight_factor_values=(0.9 1 1.5)
 
 for weight_depth in ${weight_depth_values[@]}
 do
