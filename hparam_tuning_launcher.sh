@@ -33,7 +33,7 @@ do
                     --compare_size $compare_size \
                     --normal_weight_factor $normal_weight_factor \
                     --depth_weight_factor $depth_weight_factor \
-                    --visualization_frequency $vis_freq > /home/obelleiro/ADL4CV/out/log_files/
+                    --visualization_frequency $vis_freq > /home/obelleiro/ADL4CV/out/log_files/${run_name}.log
 
                 echo "Finished running with: $run_name"
             done
@@ -62,7 +62,7 @@ python3 reconstruct.py \
     --compare_size $compare_size \
     --normal_weight_factor $normal_weight_factor \
     --depth_weight_factor $depth_weight_factor \
-    --visualization_frequency $vis_freq > /home/obelleiro/ADL4CV/out/log_files/
+    --visualization_frequency $vis_freq > /home/obelleiro/ADL4CV/out/log_files/${run_name}.log
 
 echo "Finished special L2 run: $run_name"
 
@@ -88,7 +88,7 @@ python3 reconstruct.py \
     --compare_size $compare_size \
     --normal_weight_factor $normal_weight_factor \
     --depth_weight_factor $depth_weight_factor \
-    --visualization_frequency $vis_freq > /home/obelleiro/ADL4CV/out/log_files/
+    --visualization_frequency $vis_freq > /home/obelleiro/ADL4CV/out/log_files/${run_name}.log
 
 echo "Finished special weight_normal_c=1.2 run: $run_name"
 
@@ -110,6 +110,6 @@ python3 reconstruct.py \
     --compare_size $compare_size \
     --normal_weight_factor $normal_weight_factor \
     --depth_weight_factor $depth_weight_factor \
-    --visualization_frequency $vis_freq > /home/obelleiro/ADL4CV/out/log_files/
+    --visualization_frequency $vis_freq > /home/obelleiro/ADL4CV/out/log_files/${run_name}.log
 
 echo "Finished special compare_size=400 run: $run_name"
