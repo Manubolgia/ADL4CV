@@ -53,6 +53,7 @@ if __name__ == '__main__':
     parser.add_argument('--num_views', type=int, default=-1, help="Number of input views chosen at random from the input_dir")
     parser.add_argument('--loss', type=str, default='L1', help="Choose between L1 and L2 loss, default is L1")
     parser.add_argument('--compare_size', type=int, default=200, help="Re-scaled size of normals and depth images used during loss calculation")
+    parser.add_argument('--normal_format', type=str, default='omnidata', help="Normal vectors ground truth format omnidata/NERF")
     # Add module arguments
     ViewSampler.add_arguments(parser)
 
@@ -191,9 +192,9 @@ if __name__ == '__main__':
             losses['mask'] = mask_loss(views_subset, gbuffers)
         if loss_weights['normal'] > 0:
             if args.loss == "L2":
-                losses['normal'] = normal_loss(views_subset, gbuffers, torch.nn.MSELoss(), args.compare_size, device=device)
+                losses['normal'] = normal_loss(views_subset, gbuffers, torch.nn.MSELoss(), args.compare_size, args.normal_format, device=device)
             else:
-                losses['normal'] = normal_loss(views_subset, gbuffers, torch.nn.L1Loss(), args.compare_size, device=device)
+                losses['normal'] = normal_loss(views_subset, gbuffers, torch.nn.L1Loss(), args.compare_size, args.normal_format, device=device)
         if loss_weights['depth'] > 0:
             losses['depth'] = depth_loss(views_subset, gbuffers, args.compare_size, device=device)
         if loss_weights['normal_c'] > 0:
@@ -234,9 +235,6 @@ if __name__ == '__main__':
             }, refresh=True)
 
 
-        #progress_bar.set_postfix({'loss': loss.detach().cpu(), 'normal_loss':losses['normal'].detach().cpu()*loss_weights['normal']})
-
-
         # Visualizations
         if (args.visualization_frequency > 0) and shader and (iteration == 1 or iteration % args.visualization_frequency == 0):
             
@@ -258,24 +256,18 @@ if __name__ == '__main__':
                     shaded_path.mkdir(parents=True, exist_ok=True)
                     plt.imsave(shaded_path / f'neuralshading_{iteration}.png', shaded_image.cpu().numpy())
 
-                    # Save a normal map in camera space
-                    #normal = torch.clamp(normal, min=0)
+                    # Save a normal map
                     normal_path = (images_save_path / str(vi) / "normal") if use_fixed_views else (images_save_path / "normal")
                     normal_path.mkdir(parents=True, exist_ok=True)
-                    R = torch.tensor([[1, 0, 0], [0, -1, 0], [0, 0, -1]], device=device, dtype=torch.float32)
-                    normal_image = (0.5*(normal @ debug_view.camera.R.T + 1)) * debug_gbuffer["mask"] + (1-debug_gbuffer["mask"])
-                    #normal_image *= 255
-                    #normal_image = (normal)*255
-                    #normal_image = normal_image * debug_gbuffer["mask"].expand_as(normal_image)
-                    #normal_image = normal_image.cpu().numpy().astype(np.uint8)
-                    #plt.imsave(normal_path / f'neuralshading_{iteration}.png', normal_image)
-                    #normal_image = (0.5*(normal @ debug_view.camera.R.T + 1)) * debug_gbuffer["mask"] + (1-debug_gbuffer["mask"])
-
-
-                    #normal_image = (0.5*(normal + 1)*255)
-                    #normal_image = normal_image * debug_gbuffer["mask"].expand_as(normal_image)
-                    #normal_image = normal_image.cpu().numpy().astype(np.uint8)
-                    plt.imsave(normal_path / f'neuralshading_{iteration}.png', normal_image.cpu().numpy())
+                    if args.normal_format=='NERF':
+                        normal_image = torch.clamp(normal, min=0) * debug_gbuffer["mask"] + (1-debug_gbuffer["mask"])
+                        normal_image *= 255
+                    else:
+                        normal_image = (0.5*(normal @ debug_view.camera.R.T + 1)) * debug_gbuffer["mask"] + (1-debug_gbuffer["mask"])
+                        normal_image *= 255
+                    
+                    plt.imsave(normal_path / f'neuralshading_{iteration}.png', normal_image.cpu().numpy().astype(np.uint8))                       
+                    
 
                     # Save a depth map in camera space
                     depth_path = (images_save_path / str(vi) / "depth") if use_fixed_views else (images_save_path / "depth")
