@@ -45,8 +45,8 @@ done
 loss='L2'
 weight_depth=0.01
 weight_normal=0.01
-normal_weight_factor=0
-depth_weight_factor=0
+normal_weight_factor=1
+depth_weight_factor=1
 run_name="omni_hotdog_special_L2"
 
 echo "Running special L2 run: $run_name"
@@ -71,8 +71,8 @@ weight_normal_c=1.2
 loss='L1'
 weight_depth=0.01
 weight_normal=0.01
-normal_weight_factor=0
-depth_weight_factor=0
+normal_weight_factor=1
+depth_weight_factor=1
 run_name="omni_hotdog_special_wNC1.2"
 
 echo "Running special weight_normal_c=1.2 run: $run_name"
