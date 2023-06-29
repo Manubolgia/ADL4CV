@@ -54,8 +54,8 @@ if __name__ == '__main__':
     parser.add_argument('--loss', type=str, default='L1', help="Choose between L1 and L2 loss, default is L1")
     parser.add_argument('--compare_size', type=int, default=200, help="Re-scaled size of normals and depth images used during loss calculation")
     parser.add_argument('--normal_format', type=str, default='omnidata', help="Normal vectors ground truth format omnidata/NERF")
-    parser.add_argument('--normal_weight_factor', type=float, default=0.0, help="Factor to mulitply the weight of the normal loss when upsmapling mesh")
-    parser.add_argument('--depth_weight_factor', type=float, default=0.0, help="Factor to mulitply the weight of the depth loss when upsmapling mesh")
+    parser.add_argument('--normal_weight_factor', type=float, default=1,0, help="Factor to mulitply the weight of the normal loss when upsmapling mesh")
+    parser.add_argument('--depth_weight_factor', type=float, default=1.0, help="Factor to mulitply the weight of the depth loss when upsmapling mesh")
     # Add module arguments
     ViewSampler.add_arguments(parser)
 
