@@ -2,6 +2,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import numpy as np
 from pathlib import Path
 import torch
+import os
 
 from nds.core import (
     Mesh, Renderer
@@ -19,28 +20,26 @@ from nds.losses.shading import RandomSamples
 
 from torchmetrics import PeakSignalNoiseRatio
 
-def calculate_psnr_score(views, gbuffers, shader, score_function=PeakSignalNoiseRatio(), shading_percentage=1):
+def calculate_psnr_score(view, gbuffer, shader, score_function=PeakSignalNoiseRatio(), shading_percentage=1):
     psnr = 0
     sample_fn = lambda x: x
-    for view, gbuffer in zip(views, gbuffers):
-        # Get valid area
-        mask = ((view.mask > 0) & (gbuffer["mask"] > 0)).squeeze()
+    # Get valid area
+    mask = ((view.mask > 0) & (gbuffer["mask"] > 0)).squeeze()
 
-        # Sample only within valid area
-        if shading_percentage != 1:
-            sample_fn = RandomSamples(view.mask[mask].shape[0], 1, shading_percentage)
-    
-        target = sample_fn(view.color[mask])
+    # Sample only within valid area
+    if shading_percentage != 1:
+        sample_fn = RandomSamples(view.mask[mask].shape[0], 1, shading_percentage)
 
-        position = sample_fn(gbuffer["position"][mask])
-        normal = sample_fn(gbuffer["normal"][mask])
+    target = sample_fn(view.color[mask])
 
-        view_direction = view.camera.center - position
-        view_direction = torch.nn.functional.normalize(view_direction, dim=-1)
+    position = sample_fn(gbuffer["position"][mask])
+    normal = sample_fn(gbuffer["normal"][mask])
 
-        psnr += score_function(shader(position, normal, view_direction), target)
+    view_direction = view.camera.center - position
+    view_direction = torch.nn.functional.normalize(view_direction, dim=-1)
 
-    return psnr / len(views)
+    psnr = score_function(shader(position, normal, view_direction), target)
+    return psnr 
 
 if __name__ == "__main__":
     parser = ArgumentParser(description='Shading evaluation of the Neural Deffered Shading model with PSNR', formatter_class=ArgumentDefaultsHelpFormatter)
@@ -83,8 +82,21 @@ if __name__ == "__main__":
 
     gbuffers = renderer.render(views, mesh, channels=['mask', 'position', 'normal', 'depth'], with_antialiasing=True) 
 
-    shading_loss = shading_loss(views, gbuffers, shader=shader, shading_percentage=args.shading_percentage)
-
+    sh_loss = 0
     psnr = PeakSignalNoiseRatio().to(device)
-    psnr_score = calculate_psnr_score(views, gbuffers, shader, psnr, args.shading_percentage)
-    print("shading loss: %s \npsnr score: %s" % (shading_loss, psnr_score))
+    psnr_score = 0
+    for view, gbuffer in zip(views, gbuffers):
+        sh_loss += shading_loss([view], [gbuffer], shader=shader, shading_percentage=args.shading_percentage).cpu().item()
+    sh_loss = sh_loss / len(views)
+    for view, gbuffer in zip(views, gbuffers):
+        psnr_score += calculate_psnr_score(view, gbuffer, shader, psnr, args.shading_percentage).cpu().item()
+    psnr_score = psnr_score / len(views)
+    print("shading loss: %s \npsnr score: %s" % (sh_loss, psnr_score))
+    path = '%s/shading_eval.txt' % args.output_dir
+    isExist = os.path.exists(args.output_dir)
+    if not isExist:
+        os.makedirs(args.output_dir)
+        print("The new directory is created!")
+
+    with open(path, 'w') as f:
+        f.write('shading loss: %s \npsnr score: %s' % (sh_loss, psnr_score))
