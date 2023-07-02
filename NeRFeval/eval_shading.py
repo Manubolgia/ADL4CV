@@ -45,22 +45,23 @@ if __name__ == "__main__":
     parser = ArgumentParser(description='Shading evaluation of the Neural Deffered Shading model with PSNR', formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument('--input_dir', type=Path, default="./data", help="Path to the input views")
     parser.add_argument('--input_bbox', type=Path, default=None, help="Path to the input bounding box. If None, it is computed from the input mesh")
-    parser.add_argument('--output_dir', type=Path, default="./out", help="Path to the output directory")
+    parser.add_argument('--output_dir', type=Path, default="./eval_results", help="Path to the output directory")
     parser.add_argument('--mesh', type=str, default="vh32", help="Path to the mesh")
     parser.add_argument('--image_scale', type=int, default=1, help="Scale applied to the input images. The factor is 1/image_scale, so image_scale=2 halves the image size")
     parser.add_argument('--device', type=int, default=0, choices=([-1] + list(range(torch.cuda.device_count()))), help="GPU to use; -1 is CPU")
     parser.add_argument('--shader', type=str, default=None, help="Path to the neural shader")
     parser.add_argument('--shading_percentage', type=float, default=0.75, help="Percentage of valid pixels considered in the shading loss (0-1)")
     parser.add_argument('--num_views', type=int, default=-1, help="Number of input views chosen at random from the input_dir")
-    
+    parser.add_argument('--iter', type=int, default=2000, help="Number of iterations during the reconstruction")
+
     args = parser.parse_args()
     device = torch.device('cpu')
     if torch.cuda.is_available() and args.device >= 0:
         device = torch.device(f'cuda:{args.device}')
     print(f"Using device {device}")
     views = read_views(args.input_dir, args.num_views, scale=args.image_scale, device=device)
-
-    mesh = read_mesh(args.mesh, device)
+    mesh_path = args.mesh + "/mesh_%06d.obj" % args.iter
+    mesh = read_mesh(mesh_path, device)
 
     # Load the bounding box or create it from the mesh vertices
     if args.input_bbox is not None:
@@ -92,7 +93,9 @@ if __name__ == "__main__":
         psnr_score += calculate_psnr_score(view, gbuffer, shader, psnr, args.shading_percentage).cpu().item()
     psnr_score = psnr_score / len(views)
     print("shading loss: %s \npsnr score: %s" % (sh_loss, psnr_score))
-    path = '%s/shading_eval.txt' % args.output_dir
+    instance_name = args.mesh.split('/')[-2]
+    #path = '%s/shading_eval.txt' % args.output_dir
+    path = '%s/%s_%s_shading_eval.txt' % (args.output_dir, instance_name, args.iter)
     isExist = os.path.exists(args.output_dir)
     if not isExist:
         os.makedirs(args.output_dir)

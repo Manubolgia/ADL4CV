@@ -36,6 +36,7 @@ if __name__ == "__main__":
     parser.add_argument('-n', type=int, default=2500000)
     parser.add_argument('--mesh', type=str)
     parser.add_argument('--ref', type=str)
+    parser.add_argument('--out', type=str, default="eval_results/")
     parser.add_argument('--iter', type=int)
     FLAGS = parser.parse_args()
 
@@ -61,7 +62,7 @@ if __name__ == "__main__":
     fscore, precision, recall = calculate_fscore(pcd_ref, pcd_mesh)
     instance_name = FLAGS.mesh.split('/')[-2]
 
-    path = 'eval_results/%s_%s.txt' % (instance_name, FLAGS.iter)
+    path = '%s/%s_%s_mesh_eval.txt' % (FLAGS.out, instance_name, FLAGS.iter)
     isExist = os.path.exists("eval_results/")
     if not isExist:
         os.makedirs("eval_results/")
