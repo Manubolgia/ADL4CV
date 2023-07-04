@@ -35,19 +35,19 @@ do
 
                 echo "Starting experiment $current_experiment of $total_experiments with: $run_name"
 
-                #python3 reconstruct.py \
-                #    --input_dir $input_dir \
-                #    --input_bbox $input_bbox \
-                #    --run_name $run_name \
-                #    --iterations $iterations \
-                #    --num_views $fixed_num_views \
-                #    --weight_normal $weight_normal \
-                #    --weight_depth $weight_depth \
-                #    --shade_views_eval True \
-                #    --output_dir ./out/iterations_change \
-                #    --visualization_frequency $vis_freq > ./out/iterations_change/${run_name}.log
+                python3 reconstruct.py \
+                    --input_dir $input_dir \
+                    --input_bbox $input_bbox \
+                    --run_name $run_name \
+                    --iterations $iterations \
+                    --num_views $fixed_num_views \
+                    --weight_normal $weight_normal \
+                    --weight_depth $weight_depth \
+                    --shade_views_eval True \
+                    --output_dir ./out/iterations_change \
+                    --visualization_frequency $vis_freq > ./out/iterations_change/${run_name}.log
 
-                #echo "Finished experiment $current_experiment of $total_experiments with: $run_name"
+                echo "Finished experiment $current_experiment of $total_experiments with: $run_name"
             done
         done
     done
@@ -70,19 +70,19 @@ do
 
                 echo "Starting experiment $current_experiment of $total_experiments with: $run_name"
 
-                #python3 reconstruct.py \
-                #    --input_dir $input_dir \
-                #    --input_bbox $input_bbox \
-                #    --run_name $run_name \
-                #    --iterations $fixed_iterations \
-                #    --num_views $num_views \
-                #    --weight_normal $weight_normal \
-                #    --weight_depth $weight_depth \
-                #    --shade_views_eval True \
-                #    --output_dir ./out/views_change \
-                #    --visualization_frequency $vis_freq > ./out/views_change/${run_name}.log
+                python3 reconstruct.py \
+                    --input_dir $input_dir \
+                    --input_bbox $input_bbox \
+                    --run_name $run_name \
+                    --iterations $fixed_iterations \
+                    --num_views $num_views \
+                    --weight_normal $weight_normal \
+                    --weight_depth $weight_depth \
+                    --shade_views_eval True \
+                    --output_dir ./out/views_change \
+                    --visualization_frequency $vis_freq > ./out/views_change/${run_name}.log
 
-                #echo "Finished experiment $current_experiment of $total_experiments with: $run_name"
+                echo "Finished experiment $current_experiment of $total_experiments with: $run_name"
             done
         done
     done
