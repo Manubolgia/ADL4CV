@@ -18,7 +18,7 @@ mkdir -p ./out/views_change
 
 # Changing number of iterations
 current_experiment=0
-total_experiments=$((${#input_dir_values[@]} * ${#iterations_values[@]} * 4))
+total_experiments=$((${#input_dir_values[@]} * ${#iterations_values[@]} * 4 + (16*5)))
 for input_dir in ${input_dir_values[@]}
 do
     input_bbox="${input_dir%/views_ocv}/bbox.txt"
@@ -30,34 +30,27 @@ do
             for weight_depth in ${weight_depth_values[@]}
             do
                 current_experiment=$((current_experiment+1))
-                run_name=$(basename ${input_dir})_"it${iterations}_v${fixed_num_views}_wN${weight_normal//./-}_wD${weight_depth//./-}"
+                dataset_name=$(basename $(dirname $input_dir))
+                run_name="${dataset_name}_it${iterations}_v${fixed_num_views}_wN${weight_normal//./-}_wD${weight_depth//./-}"
 
                 echo "Starting experiment $current_experiment of $total_experiments with: $run_name"
 
-                python3 reconstruct.py \
-                    --input_dir $input_dir \
-                    --input_bbox $input_bbox \
-                    --run_name $run_name \
-                    --iterations $iterations \
-                    --num_views $fixed_num_views \
-                    --weight_normal $weight_normal \
-                    --weight_depth $weight_depth \
-                    --shade_views_eval True \
-                    --output_dir ./out/iterations_change \
-                    --visualization_frequency $vis_freq > ./out/iterations_change/${run_name}.log
+                #python3 reconstruct.py \
+                #    --input_dir $input_dir \
+                #    --input_bbox $input_bbox \
+                #    --run_name $run_name \
+                #    --iterations $iterations \
+                #    --num_views $fixed_num_views \
+                #    --weight_normal $weight_normal \
+                #    --weight_depth $weight_depth \
+                #    --shade_views_eval True \
+                #    --output_dir ./out/iterations_change \
+                #    --visualization_frequency $vis_freq > ./out/iterations_change/${run_name}.log
 
-                echo "Finished experiment $current_experiment of $total_experiments with: $run_name"
+                #echo "Finished experiment $current_experiment of $total_experiments with: $run_name"
             done
         done
     done
-done
-
-# Changing number of views
-current_experiment=0
-total_experiments=$((${#input_dir_values[@]} * (${#num_views_values_1[@]} + ${#num_views_values_2[@]}) * 4))
-for input_dir in ${input_dir_values[@]}
-do
-    input_bbox="${input_dir%/views_ocv}/bbox.txt"
 
     for num_views in ${num_views_values[@]}
     do
@@ -66,23 +59,24 @@ do
             for weight_depth in ${weight_depth_values[@]}
             do
                 current_experiment=$((current_experiment+1))
-                run_name=$(basename ${input_dir})_"it${fixed_iterations}_v${num_views}_wN${weight_normal//./-}_wD${weight_depth//./-}"
+                dataset_name=$(basename $(dirname $input_dir))
+                run_name="${dataset_name}_it${fixed_iterations}_v${num_views}_wN${weight_normal//./-}_wD${weight_depth//./-}"
 
                 echo "Starting experiment $current_experiment of $total_experiments with: $run_name"
 
-                python3 reconstruct.py \
-                    --input_dir $input_dir \
-                    --input_bbox $input_bbox \
-                    --run_name $run_name \
-                    --iterations $fixed_iterations \
-                    --num_views $num_views \
-                    --weight_normal $weight_normal \
-                    --weight_depth $weight_depth \
-                    --shade_views_eval True \
-                    --output_dir ./out/views_change \
-                    --visualization_frequency $vis_freq > ./out/views_change/${run_name}.log
+                #python3 reconstruct.py \
+                #    --input_dir $input_dir \
+                #    --input_bbox $input_bbox \
+                #    --run_name $run_name \
+                #    --iterations $fixed_iterations \
+                #    --num_views $num_views \
+                #    --weight_normal $weight_normal \
+                #    --weight_depth $weight_depth \
+                #    --shade_views_eval True \
+                #    --output_dir ./out/views_change \
+                #    --visualization_frequency $vis_freq > ./out/views_change/${run_name}.log
 
-                echo "Finished experiment $current_experiment of $total_experiments with: $run_name"
+                #echo "Finished experiment $current_experiment of $total_experiments with: $run_name"
             done
         done
     done
