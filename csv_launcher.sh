@@ -12,11 +12,22 @@ dataset_types=("nerf" "nerf" "dtu" "dtu")
 # List of models
 models=("_wN0_wD0" "_wN0-001_wD0" "_wN0_wD0-01" "_wN0-001_wD0-01")
 
-# Iterations and views
-iterations=(10 100 500 1000 1500 2000)
-views=(-1 5 25 50 90)
+# Define the iterations and views for each dataset type
+nerf_iterations=(10 100 500 1000 1500 2000)
+nerf_views=(5 25 50 90 -1)
+dtu_iterations=(10 100 500 1000 1500 2000)
+dtu_views=(5 10 20 30 -1)
 
 for i in ${!datasets[@]}; do
+  # Select the correct iterations and views based on the dataset type
+  if [ ${dataset_types[$i]} = "nerf" ]; then
+    iterations=(${nerf_iterations[@]})
+    views=(${nerf_views[@]})
+  else
+    iterations=(${dtu_iterations[@]})
+    views=(${dtu_views[@]})
+  fi
+
   # Create CSV files for changing iterations (views fixed at -1)
   output_file="${csv_out}/${datasets[$i]}_iterations.csv"
   echo "iteration,fscore_${models[0]},loss_${models[0]},psnr_${models[0]},fscore_${models[1]},loss_${models[1]},psnr_${models[1]},fscore_${models[2]},loss_${models[2]},psnr_${models[2]},fscore_${models[3]},loss_${models[3]},psnr_${models[3]}" > $output_file
@@ -49,7 +60,6 @@ for i in ${!datasets[@]}; do
       else
         psnr="NaN"
       fi
-
       row="$row,$fscore,$loss,$psnr"
     done
     echo $row >> $output_file
@@ -87,7 +97,6 @@ for i in ${!datasets[@]}; do
       else
         psnr="NaN"
       fi
-
       row="$row,$fscore,$loss,$psnr"
     done
     echo $row >> $output_file
