@@ -52,6 +52,12 @@ do
         done
     done
 
+    if [ "$input_dir" = "/mnt/hdd/data/omni_hotdog/views_ocv" ] || [ "$input_dir" = "/mnt/hdd/data/omni_chair/views_ocv" ]; then
+        num_views_values=("${num_views_values_1[@]}")
+    else
+        num_views_values=("${num_views_values_2[@]}")
+    fi
+
     for num_views in ${num_views_values[@]}
     do
         for weight_normal in ${weight_normal_values[@]}
