@@ -6,7 +6,7 @@ vis_freq=250
 weight_normal_values=(0 0.001) # replace 'value1' with your own value
 weight_depth_values=(0 0.01) # replace 'value2' with your own value
 
-
+iterations=1000
 
 mkdir -p ./out/result_robustness
 
@@ -31,6 +31,7 @@ do
                 --input_dir $input_dir \
                 --input_bbox $input_bbox \
                 --run_name $run_name \
+                --iterations $iterations \
                 --weight_normal $weight_normal \
                 --weight_depth $weight_depth \
                 --shade_views_eval True \
