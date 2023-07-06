@@ -2,7 +2,7 @@
 
 # Directory settings
 base_dir="/home/pavkovic/ADL4CV/eval_robustness"
-csv_out="/home/pavkovic/ADL4CV/csv_out"
+csv_out="/home/obelleiro/ADL4CV/csv_out"
 mkdir -p $csv_out
 
 # Only dataset
