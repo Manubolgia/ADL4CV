@@ -6,13 +6,13 @@ vis_freq=250
 weight_normal_values=(0 0.001) # replace 'value1' with your own value
 weight_depth_values=(0 0.01) # replace 'value2' with your own value
 
-iterations=1000
+iterations=2000
 
 mkdir -p ./out/result_robustness
 
 # Changing number of iterations
 current_experiment=0
-max_experiments=20
+max_experiments=10
 total_experiments=80
 for input_dir in ${input_dir_values[@]}
 do
