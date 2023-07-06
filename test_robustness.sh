@@ -13,7 +13,7 @@ mkdir -p ./out/result_robustness
 # Changing number of iterations
 current_experiment=0
 max_experiments=20
-total_experiments=$max_experiments * 8
+total_experiments=80
 for input_dir in ${input_dir_values[@]}
 do
     input_bbox="${input_dir%/views_ocv}/bbox.txt"
