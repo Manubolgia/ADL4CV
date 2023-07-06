@@ -17,7 +17,7 @@ total_experiments=10
 for input_dir in ${input_dir_values[@]}
 do
     input_bbox="${input_dir%/views_ocv}/bbox.txt"
-    while $current_experiment < $max_experiments
+    while [ $current_experiment -lt $max_experiments ]
     do
         for weight_normal in ${weight_normal_values[@]}
         do
@@ -40,7 +40,6 @@ do
                     --visualization_frequency $vis_freq > ./out/result_robustness/${run_name}.log
 
                 echo "Finished experiment $current_experiment of $total_experiments with: $run_name"
-
             done
         done
         current_experiment=$((current_experiment+1))
