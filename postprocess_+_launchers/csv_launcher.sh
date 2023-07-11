@@ -6,8 +6,8 @@ csv_out="/home/obelleiro/ADL4CV/csv_out"
 mkdir -p $csv_out
 
 # List of datasets and dataset types
-datasets=("omni_hotdog" "omni_chair" "omni_skull" "omni_owl")
-dataset_types=("nerf" "nerf" "dtu" "dtu")
+datasets=("omni_drums")
+dataset_types=("nerf")
 
 # List of models
 models=("_wN0_wD0" "_wN0-001_wD0" "_wN0_wD0-01" "_wN0-001_wD0-01")
