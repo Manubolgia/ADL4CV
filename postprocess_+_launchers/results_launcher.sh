@@ -8,9 +8,8 @@ num_views_values_2=(5 10 20 30 -1)
 fixed_num_views=-1
 vis_freq=250
 
-weight_normal_values=(0 0.001) # replace 'value1' with your own value
-weight_depth_values=(0 0.01) # replace 'value2' with your own value
-
+weight_normal_values=(0 0.001) 
+weight_depth_values=(0 0.01) 
 
 
 mkdir -p ./out/iterations_change

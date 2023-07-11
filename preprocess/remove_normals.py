@@ -1,8 +1,8 @@
 import os
 import shutil
 
-source_folder = '/home/pavkovic/NERF_Dataset_ocv/hotdog/views'
-destination_folder = '/home/pavkovic/NERF_Dataset_ocv/hotdog/normals'
+source_folder = ''
+destination_folder = ''
 
 # Create the destination folder if it doesn't exist
 if not os.path.exists(destination_folder):

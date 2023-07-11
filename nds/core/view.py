@@ -63,8 +63,8 @@ class View:
 
         color = color[:, :, :3]
 
-        # Get the normals
-        #normal = torch.FloatTensor(np.array(Image.open(image_path.parent / (image_path.stem + "_normal.png")).convert('RGB')))
+        # Get the normals and depths as paths
+        
         normal = image_path.parent / (image_path.stem + "_normal.png")
         depth = image_path.parent / (image_path.stem + "_depth.png")
         

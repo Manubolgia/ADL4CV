@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon May 15 10:59:29 2023
-
-@author: Manuel
-"""
 import json
 import bpy
          
