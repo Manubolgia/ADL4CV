@@ -56,7 +56,7 @@ In order for the model to work with the data provided in the NeRF synthetic data
 
 As the original DTU images are non-square, and the Omnidata model predicts a square normal map, we need to first preprocess the DTU images.
 
-1. Run resize_images to pad and resize the images. Calling this function will also modify the K.txt file, as the shapeof the image changes, we need to adjust the camera intrinsics matrix accordingly
+1. Run resize_images to pad and resize the images. Calling this function will also modify the K.txt file, as the shape of the image changes, we need to adjust the camera intrinsics matrix accordingly
 
 2. Run the scripts for predicting normals and depths
 
