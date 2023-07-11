@@ -3,7 +3,7 @@
 input_dir_values=("/mnt/hdd/data/omni_skull/views_ocv" "/mnt/hdd/data/omni_hotdog/views_ocv" "/mnt/hdd/data/omni_owl/views_ocv" "/mnt/hdd/data/omni_chair/views_ocv")
 iterations_values=(10 100 500 1000 1500 2000)
 fixed_iterations=2000
-num_views_values_1=(5 25 50 90 -1)
+num_views_values_1=(5 25 50 90 -1)#nerf
 num_views_values_2=(5 10 20 30 -1)
 fixed_num_views=-1
 vis_freq=250

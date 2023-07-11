@@ -70,7 +70,7 @@ if img_path.is_file():
     save_outputs(args.img_path, os.path.splitext(os.path.basename(args.img_path))[0])
 elif img_path.is_dir():
     for f in glob.glob(args.img_path+'/*.png'):
-        if "_normal" in f or "depth" in f:
+        if "_normal.png" in f or "depth.png" in f:
             continue
         save_outputs(f, os.path.splitext(os.path.basename(f))[0])
 else:
