@@ -1,10 +1,5 @@
 # Neural Deferred Shading
 
-## [Project Page](https://fraunhoferhhi.github.io/neural-deferred-shading) &nbsp;|&nbsp; [Paper](https://mworchel.github.io/assets/papers/neural_deferred_shading_with_supp.pdf) 
-
-![alt text](docs/static/images/collection_large_bright_small.jpg)
-
-Official code for the CVPR 2022 paper "[Multi-View Mesh Reconstruction with Neural Deferred Shading](https://openaccess.thecvf.com/content/CVPR2022/html/Worchel_Multi-View_Mesh_Reconstruction_With_Neural_Deferred_Shading_CVPR_2022_paper.html)", a method for fast multi-view reconstruction with analysis-by-synthesis.
 
 ## Installation
 
@@ -39,11 +34,39 @@ Option 2: Install pyremesh from source.
 
 Follow the instructions at https://github.com/sgsellan/botsch-kobbelt-remesher-libigl.
 
-## Reconstructing DTU Scans
+## Required Data Preprocessing
+
+### NeRF Dataset
+
+In order for the model to work with the data provided in the NeRF synthetic dataset follow these steps: 
+
+1. Load model in Blender and run the blender scripts
+
+	1.1. camera_variables.py
+
+	1.2. get_bbox.py
+
+2. Run create_matrices to translate the transformation matrix and camera information to the R,K,t matrices.
+
+3. Run rename and move to move the views and rename them in the appropiate format in the folder where you have stored the matrices
+
+4. Run the scripts for predicting normals and depths (if there are normals in the folder delete them, the information provided in blender normals is insuficient)
+
+### DTU Dataset
+
+As the original DTU images are non-square, and the Omnidata model predicts a square normal map, we need to first preprocess the DTU images.
+
+1. Run resize_images to pad and resize the images. Calling this function will also modify the K.txt file, as the shapeof the image changes, we need to adjust the camera intrinsics matrix accordingly
+
+2. Run the scripts for predicting normals and depths
+
+## Reconstructing scans
 
 Download the [full dataset](https://www.dropbox.com/s/56ym2qrjfg7jymo/data.zip) (2.3 GB) or [two samples](https://www.dropbox.com/s/x5hrx26l1pmz1id/data.zip) (300 MB) and unzip the content into the main directory. For example, after unzipping you should have the directory `./data/65_skull`.
 
-To start the reconstruction for the skull, run:
+NeRF dataset: https://drive.google.com/drive/folders/128yBriW1IG_3NJ5Rp7APSTZsJqdJdfc1
+
+To start the reconstruction for the DTU skull for instance, run:
 ```bash
 python reconstruct.py --input_dir ./data/65_skull/views --input_bbox ./data/65_skull/bbox.txt
 ```
@@ -100,17 +123,6 @@ If you would like to start your reconstruction from a custom initial mesh instea
 ### Customizing Loading Routines
 
 If you want to tinker with our data loading routines to adapt them to your format, have a look at `nds.utils.io.read_views()` and `nds.core.view.View.load()`.
-
-## Using NeRF synthetic dataset instructions
-In order for the model to work with the data provided in the NeRF synthetic dataset follow these steps: 
-
-1. Load model in Blender and run the blender scripts
-
-	1.1. camera_variables.py
-
-	1.2. get_bbox.py
-2. Run create_matrices to translate the transformation matrix and camera information to the R,K,t matrices.
-3. Run rename and move to move the views and rename them in the appropiate format in the folder where you have stored the matrices
 
 
 ## Using the Interactive Viewer
