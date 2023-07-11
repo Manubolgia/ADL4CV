@@ -162,7 +162,7 @@ After reconstruction, the output directory will contain the additional file `pro
 
 ## Citation
 
-If you find this code or our method useful for your academic research, please cite our paper
+Baseline implementation made by:
 
 ```bibtex
 @InProceedings{worchel:2022:nds,
@@ -174,6 +174,7 @@ If you find this code or our method useful for your academic research, please ci
       pages     = {6187-6197}
 }
 ```
+https://github.com/fraunhoferhhi/neural-deferred-shading
 
 ## Troubleshooting
 
