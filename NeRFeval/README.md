@@ -14,6 +14,8 @@ pip install "git+https://github.com/facebookresearch/pytorch3d.git@stable"
 pip install git+'https://github.com/otaheri/chamfer_distance'
 
 ```
+4. Install open3d
+
 ### Usage
 Run the evaluation script
 ```
