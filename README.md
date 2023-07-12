@@ -79,7 +79,7 @@ You will find the output meshes in the directory `./out/{SCAN-ID}_{SCAN-NAME}/me
 
 ### Monocular Cues Prediction
 
-To extract monocular depths and normals run following commands (please install [omnidata model](https://github.com/EPFL-VILAB/omnidata) before running the command) and install timm since MiDaS depends on it ([MiDaS](https://pytorch.org/hub/intelisl_midas_v2/)):
+To extract monocular depths and normals run following commands (please install [omnidata model](https://github.com/EPFL-VILAB/omnidata) and timm since MiDaS depends on it ([MiDaS](https://pytorch.org/hub/intelisl_midas_v2/)) before running the command):
 ```
 python preprocess/extract_monocular_depth.py --img_path ../data/65_skull/views --output_path ../data/65_skull/views 
 python preprocess/extract_monocular_cues.py --task normal --img_path ../data/65_skull/views --output_path ../data/65_skull/views --omnidata_path YOUR_OMNIDATA_PATH --pretrained_models PRETRAINED_MODELS
