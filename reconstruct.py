@@ -56,6 +56,7 @@ if __name__ == '__main__':
     parser.add_argument('--normal_format', type=str, default='omnidata', help="Normal vectors ground truth format omnidata/NERF")
     parser.add_argument('--normal_weight_factor', type=float, default=1.0, help="Factor to mulitply the weight of the normal loss when upsmapling mesh")
     parser.add_argument('--depth_weight_factor', type=float, default=1.0, help="Factor to mulitply the weight of the depth loss when upsmapling mesh")
+    parser.add_argument('--shade_views_eval', type=bool, default=False, help="When the training finishes, shade the input views for evaluation")
     # Add module arguments
     ViewSampler.add_arguments(parser)
 
@@ -255,9 +256,13 @@ if __name__ == '__main__':
 
                     # Save the shaded rendering
                     shaded_image = shader(position, normal, view_direction) * debug_gbuffer["mask"] + (1-debug_gbuffer["mask"])
+                    mask = debug_gbuffer["mask"]
                     shaded_path = (images_save_path / str(vi) / "shaded") if use_fixed_views else (images_save_path / "shaded")
                     shaded_path.mkdir(parents=True, exist_ok=True)
-                    plt.imsave(shaded_path / f'neuralshading_{iteration}.png', shaded_image.cpu().numpy())
+
+                    output_image = torch.cat((shaded_image, mask), dim=-1)
+
+                    plt.imsave(shaded_path / f'neuralshading_{iteration}.png', output_image.cpu().numpy())
 
                     # Save a normal map
                     normal_path = (images_save_path / str(vi) / "normal") if use_fixed_views else (images_save_path / "normal")
@@ -318,9 +323,40 @@ if __name__ == '__main__':
                 print('There was an error while saving the losses')
     
     save_losses(losses_record, plots_save_path)
-
     mesh_for_writing = space_normalization.denormalize_mesh(mesh.detach().to('cpu'))
     write_mesh(meshes_save_path / f"mesh_{args.iterations:06d}.obj", mesh_for_writing)
 
     if shader is not None:
         shader.save(shaders_save_path / f'shader_{args.iterations:06d}.pt')
+
+    #Extra evaluation step, computing shaded images for all views
+    if args.shade_views_eval:
+        with torch.no_grad():
+            i=0
+
+            eval_views = read_views(args.input_dir, num_views=-1, scale=args.image_scale, device=device)
+            eval_views = space_normalization.normalize_views(eval_views)
+            print('\nEvaluating '+str(len(eval_views))+' views')
+            print('Using: ',shaders_save_path / f'shader_{args.iterations:06d}.pt')
+            
+            shader = NeuralShader.load(shaders_save_path / f'shader_{args.iterations:06d}.pt', device)
+
+            for eval_view in eval_views: 
+                new_path = set(eval_view.image_path.parts) - set(args.input_dir.parts)
+                eval_gbuffer = renderer.render([eval_view], mesh, channels=['mask', 'position', 'normal'], with_antialiasing=True)[0]
+                position = eval_gbuffer["position"]
+                normal = eval_gbuffer["normal"]
+                view_direction = torch.nn.functional.normalize(eval_view.camera.center - position, dim=-1)
+
+                # Save the shaded rendering
+                shaded_image = shader(position, normal, view_direction)# * eval_gbuffer["mask"] + (1-eval_gbuffer["mask"])
+                mask = eval_gbuffer["mask"]
+            
+                shaded_path = (images_save_path / "eval_shaded") if use_fixed_views else (images_save_path / "eval_shaded")
+                shaded_path.mkdir(parents=True, exist_ok=True)
+
+                output_image = torch.cat((shaded_image, mask), dim=-1)
+
+                plt.imsave(shaded_path / Path(*new_path), shaded_image.cpu().numpy())
+                i+=1
+        print('Finished evaluation')

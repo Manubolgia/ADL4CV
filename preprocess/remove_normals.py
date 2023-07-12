@@ -1,8 +1,8 @@
 import os
 import shutil
 
-source_folder = '/home/pavkovic/data/122_owl/views_ocv_resized/'
-destination_folder = '/home/pavkovic/data/122_owl/normals_folder/'
+source_folder = ''
+destination_folder = ''
 
 # Create the destination folder if it doesn't exist
 if not os.path.exists(destination_folder):

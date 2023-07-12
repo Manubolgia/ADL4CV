@@ -16,13 +16,15 @@ class View:
         device (torch.device): Device where the images and camera are stored
     """
 
-    def __init__(self, color, mask, normal, depth, camera, device='cpu'):
+    def __init__(self, color, mask, normal, depth, camera, image_path, device='cpu'):
         self.color = color.to(device)
         self.mask = mask.to(device)
         self.normal = normal
         self.depth = depth
         self.camera = camera.to(device)
+        self.image_path = image_path
         self.device = device
+
         
 
 
@@ -61,13 +63,13 @@ class View:
 
         color = color[:, :, :3]
 
-        # Get the normals
-        #normal = torch.FloatTensor(np.array(Image.open(image_path.parent / (image_path.stem + "_normal.png")).convert('RGB')))
+        # Get the normals and depths as paths
+        
         normal = image_path.parent / (image_path.stem + "_normal.png")
         depth = image_path.parent / (image_path.stem + "_depth.png")
         
 
-        return cls(color, mask, normal, depth, camera, device=device)
+        return cls(color, mask, normal, depth, camera, image_path, device=device)
 
     @classmethod
     def load_shaded(cls, image_path, krt_path, device='cpu'):

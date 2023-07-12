@@ -154,9 +154,33 @@ def scale_image(image, out_size, device):
     return torch.FloatTensor(resized_image).to(device)
 
 def depth_loss(views: List[View], gbuffers: List[Dict[str, torch.Tensor]], compare_size, device):
-    """ Compute the depth term 
+""" 
+    Compute the depth term for loss in a neural network. This function calculates 
+    a depth-related loss based on ground truth and predicted depth maps for each 
+    view in the input list. The loss is calculated using a scale and shift invariant loss function.
+    
     Args:
+        views (List[View]): A list of View objects containing ground truth depth and mask information.
+        gbuffers (List[Dict[str, torch.Tensor]]): A list of dictionaries where each dictionary
+                                                   represents a g-buffer, containing predicted depth maps and 
+                                                   masks from the neural network.
+        compare_size (int): The size (height and width) to which depth maps and masks should be scaled before 
+                            loss computation. The compare_size should be an integer value.
+        device (str): The device on which computations will be performed. Should be either 'cpu' or 'cuda'.
         
+    Returns:
+        float: The average depth loss for all views.
+    
+    Notes:
+        This function performs the following steps for each view and corresponding g-buffer:
+        1. Load the ground truth depth from the view and scales it according to the compare_size.
+        2. Scales the predicted depth from the g-buffer according to the compare_size.
+        3. Applies a mask to the ground truth and predicted depth maps.
+        4. Computes loss using a scale and shift invariant loss function.
+        5. Returns the average loss for all views.
+        
+        The function assumes that depth maps are single-channel images, and only the red channel 
+        is used when loading RGB images as depth maps.
     """
     loss = 0.0
     depth_loss_function = ScaleAndShiftInvariantLoss(alpha=0.5, scales=1)

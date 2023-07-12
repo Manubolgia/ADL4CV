@@ -1,19 +1,12 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jun 29 12:58:50 2023
-
-@author: Manuel
-"""
-
 import os
 from PIL import Image
 import numpy as np
 
 # Input directory path
-input_dir = 'C:/Users/Manuel/Documents/GitHub/ADL4CV/data/65_skull/views'
+input_dir = ''
 
 # Output directory path
-output_dir = 'C:/Users/Manuel/Documents/GitHub/ADL4CV/data/65_skull/views_ocv_resized'
+output_dir = ''
 
 # Target size
 target_size = (800, 800)
