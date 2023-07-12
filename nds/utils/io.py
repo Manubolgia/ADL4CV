@@ -53,3 +53,36 @@ def read_views(directory, num_views, scale, device):
         print("Scaled views to 1/{:d}th size".format(scale))
 
     return views
+
+def read_shaded_views(directory, krt_path, num_views, scale, device):
+    directory = Path(directory)
+    krt_dir = Path(krt_path)
+
+    image_paths = sorted([path for path in directory.iterdir() if (path.is_file() and path.suffix == '.png')])
+    krt_paths = sorted([path for path in krt_dir.iterdir() if (path.is_file() and path.suffix == '.png')])
+    # Filter out the 'normal' and 'depth' images
+    image_paths = [path for path in image_paths if 'normal.png' not in str(path)]
+    image_paths = [path for path in image_paths if 'depth.png' not in str(path)]
+    krt_paths = [path for path in krt_paths if 'normal.png' not in str(path)]
+    krt_paths = [path for path in krt_paths if 'depth.png' not in str(path)]
+
+    # Ensure there are enough views to sample from
+    if num_views != -1:
+        if len(image_paths) < num_views:
+            raise ValueError(f"Error: Requested {num_views} views, but only found {len(image_paths)}")
+        # Select a subset of image paths before loading them
+        random.seed(33)
+        image_paths = random.sample(image_paths, num_views)
+    
+    views = []
+    for image_path, krt_path in zip(image_paths, krt_paths):
+        views.append(View.load_shaded(image_path, krt_path, device))
+
+    print("Found {:d} views".format(len(views)))
+
+    if scale > 1:
+        for view in views:
+            view.scale(scale)
+        print("Scaled views to 1/{:d}th size".format(scale))
+
+    return views

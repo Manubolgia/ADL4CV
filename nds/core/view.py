@@ -69,6 +69,49 @@ class View:
 
         return cls(color, mask, normal, depth, camera, device=device)
 
+    @classmethod
+    def load_shaded(cls, image_path, krt_path, device='cpu'):
+        """ Load a view from a given image path.
+
+        The paths of the camera matrices are deduced from the image path. 
+        Given an image path `path/to/directory/foo.png`, the paths to the camera matrices
+        in numpy readable text format are assumed to be `path/to/directory/foo_k.txt`, 
+        `path/to/directory/foo_r.txt`, and `path/to/directory/foo_t.txt`.
+
+        Args:
+            image_path (Union[Path, str]): Path to the image file that contains the color and optionally the mask
+            device (torch.device): Device where the images and camera are stored
+        """
+
+        image_path = Path(image_path)
+        krt_path = Path(krt_path)
+
+        # Load the camera
+        K = np.loadtxt(krt_path.parent / (krt_path.stem + "_k.txt"))
+        R = np.loadtxt(krt_path.parent / (krt_path.stem + "_r.txt"))
+        t = np.loadtxt(krt_path.parent / (krt_path.stem + "_t.txt"))
+        camera = Camera(K, R, t)
+        
+        # Load the color
+        color = torch.FloatTensor(np.array(Image.open(image_path)))
+        color /= 255.0
+        
+        # Extract the mask
+        if color.shape[2] == 4:
+            mask = color[:, :, 3:]
+        else:
+            mask = torch.ones_like(color[:, :, 0:1])
+            print("No alpha channel")
+
+        color = color[:, :, :3]
+
+        # Get the normals
+        #normal = torch.FloatTensor(np.array(Image.open(image_path.parent / (image_path.stem + "_normal.png")).convert('RGB')))
+        normal = krt_path.parent / (krt_path.stem + "_normal.png")
+        depth = krt_path.parent / (krt_path.stem + "_depth.png")
+
+        return cls(color, mask, normal, depth, camera, device=device)
+
     def to(self, device: str = "cpu"):
         self.color = self.color.to(device)
         self.mask = self.mask.to(device)

@@ -62,10 +62,10 @@ if __name__ == "__main__":
     fscore, precision, recall = calculate_fscore(pcd_ref, pcd_mesh)
     instance_name = FLAGS.mesh.split('/')[-2]
 
-    path = '%s/%s_%s_mesh_eval.txt' % (FLAGS.out, instance_name, FLAGS.iter)
-    isExist = os.path.exists("eval_results/")
+    path = '%s/%s_mesh_eval.txt' % (FLAGS.out, instance_name)
+    isExist = os.path.exists(FLAGS.out)
     if not isExist:
-        os.makedirs("eval_results/")
+        os.makedirs(FLAGS.out)
         print("The new directory is created!")
 
     with open(path, 'w') as f:

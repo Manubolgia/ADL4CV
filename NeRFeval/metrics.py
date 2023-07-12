@@ -21,7 +21,7 @@ def compute_dice_coefficient(mask_gt, mask_pred):
     volume_intersect = (mask_gt & mask_pred).sum()
     return 2 * volume_intersect / volume_sum
 
-def calculate_fscore(gt: open3d.geometry.PointCloud, pr: open3d.geometry.PointCloud, th: float=2) -> typing.Tuple[float, float, float]:
+def calculate_fscore(gt: open3d.geometry.PointCloud, pr: open3d.geometry.PointCloud, th: float=0.5) -> typing.Tuple[float, float, float]:
     '''Calculates the F-score between two point clouds with the corresponding threshold value.'''
     d1 = gt.compute_point_cloud_distance(pr)
     d2 = pr.compute_point_cloud_distance(gt)
