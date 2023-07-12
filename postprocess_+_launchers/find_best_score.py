@@ -30,6 +30,6 @@ if __name__ == "__main__":
     
     sorted_fscores = sorted(fscores.items(), key=lambda x:x[1])
     sorted_psnr_scores = sorted(psnr_scores.items(), key=lambda x:x[1])
-    sorted_chamger_dists = sorted(chamfer_dists.items(), key=lambda x:x[1])
+    sorted_chamfer_dists = sorted(chamfer_dists.items(), key=lambda x:x[1])
 
-    print("max fscore: %s %s %s \nmax psnr score: %s %s %s\nmin chamfer dist: %s %s %s" % (sorted_fscores[-1], sorted_fscores[-2],sorted_fscores[-3],sorted_psnr_scores[-1], sorted_psnr_scores[-2],sorted_psnr_scores[-3],sorted_chamger_dists[0],sorted_chamger_dists[1],sorted_chamger_dists[2]))
+    print("max fscore: %s %s %s \nmax psnr score: %s %s %s\nmin chamfer dist: %s %s %s" % (sorted_fscores[-1], sorted_fscores[-2],sorted_fscores[-3],sorted_psnr_scores[-1], sorted_psnr_scores[-2],sorted_psnr_scores[-3],sorted_chamfer_dists[0],sorted_chamfer_dists[1],sorted_chamfer_dists[2]))

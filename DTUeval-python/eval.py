@@ -5,6 +5,7 @@ from tqdm import tqdm
 from scipy.io import loadmat
 import multiprocessing as mp
 import argparse
+import os
 
 def sample_single_tri(input_):
     n1, n2, v1, v2, tri_vert = input_
@@ -31,18 +32,20 @@ if __name__ == '__main__':
     parser.add_argument('--scan', type=int, default=1)
     parser.add_argument('--mode', type=str, default='mesh', choices=['mesh', 'pcd'])
     parser.add_argument('--dataset_dir', type=str, default='.')
-    parser.add_argument('--vis_out_dir', type=str, default='.')
+    parser.add_argument('--vis_out_dir', type=str, default='eval_results/')
     parser.add_argument('--downsample_density', type=float, default=0.2)
     parser.add_argument('--patch_size', type=float, default=60)
     parser.add_argument('--max_dist', type=float, default=20)
     parser.add_argument('--visualize_threshold', type=float, default=10)
+    parser.add_argument('--iter', type=int, default=2000)
     args = parser.parse_args()
 
     thresh = args.downsample_density
     if args.mode == 'mesh':
         pbar = tqdm(total=9)
         pbar.set_description('read data mesh')
-        data_mesh = o3d.io.read_triangle_mesh(args.data)
+        mesh_path = args.data + "/mesh_%06d.obj" % args.iter
+        data_mesh = o3d.io.read_triangle_mesh(mesh_path)
 
         vertices = np.asarray(data_mesh.vertices)
         triangles = np.asarray(data_mesh.triangles)
@@ -131,7 +134,7 @@ if __name__ == '__main__':
     nn_engine.fit(data_in)
     dist_s2d, idx_s2d = nn_engine.kneighbors(stl_above, n_neighbors=1, return_distance=True)
     mean_s2d = dist_s2d[dist_s2d < max_dist].mean()
-
+    instance_name = args.data.split("/")[-2]
     pbar.update(1)
     pbar.set_description('visualize error')
     vis_dist = args.visualize_threshold
@@ -143,23 +146,22 @@ if __name__ == '__main__':
     data_alpha = dist_d2s.clip(max=vis_dist) / vis_dist
     data_color[ np.where(inbound)[0][grid_inbound][in_obs] ] = R * data_alpha + W * (1-data_alpha)
     data_color[ np.where(inbound)[0][grid_inbound][in_obs][dist_d2s[:,0] >= max_dist] ] = G
-    write_vis_pcd(f'{args.vis_out_dir}/vis_{args.scan:03}_d2s.ply', data_down, data_color)
+    write_vis_pcd(f'{args.vis_out_dir}/vis_{args.scan:03}_{instance_name}_d2s.ply', data_down, data_color)
     stl_color = np.tile(B, (stl.shape[0], 1))
     stl_alpha = dist_s2d.clip(max=vis_dist) / vis_dist
     stl_color[ np.where(above)[0] ] = R * stl_alpha + W * (1-stl_alpha)
     stl_color[ np.where(above)[0][dist_s2d[:,0] >= max_dist] ] = G
-    write_vis_pcd(f'{args.vis_out_dir}/vis_{args.scan:03}_s2d.ply', stl, stl_color)
+    write_vis_pcd(f'{args.vis_out_dir}/vis_{args.scan:03}_{instance_name}_s2d.ply', stl, stl_color)
 
     pbar.update(1)
     pbar.set_description('done')
     pbar.close()
     over_all = (mean_d2s + mean_s2d) / 2
-    #print(mean_d2s, mean_s2d, over_all)
-
-    path = 'eval_results/%s.txt' % instance_name
-    isExist = os.path.exists("eval_results/")
+    print(mean_d2s, mean_s2d, over_all)
+    path = '%s/%s.txt' % (args.vis_out_dir, instance_name)
+    isExist = os.path.exists(args.vis_out_dir)
     if not isExist:
-        os.makedirs("eval_results/")
+        os.makedirs(args.vis_out_dir)
         print("The new directory is created!")
 
     with open(path, 'w') as f:
