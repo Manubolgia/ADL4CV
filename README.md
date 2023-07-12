@@ -77,6 +77,14 @@ python reconstruct.py --input_dir ./data/{SCAN-ID}_{SCAN-NAME}/views --input_bbo
 
 You will find the output meshes in the directory `./out/{SCAN-ID}_{SCAN-NAME}/meshes`.
 
+### Monocular Cues Prediction
+
+To extract monocular depths and normals run following commands (please install [omnidata model](https://github.com/EPFL-VILAB/omnidata) before running the command) and install timm since MiDaS depends on it ([MiDaS](https://pytorch.org/hub/intelisl_midas_v2/)):
+```
+python preprocess/extract_monocular_depth.py --img_path ../data/65_skull/views --output_path ../data/65_skull/views 
+python preprocess/extract_monocular_cues.py --task normal --img_path ../data/65_skull/views --output_path ../data/65_skull/views --omnidata_path YOUR_OMNIDATA_PATH --pretrained_models PRETRAINED_MODELS
+```
+
 ## Reconstructing Custom Scenes
 
 Our pipeline expects the input data in a specific structure, which you have to follow for your own scenes.
